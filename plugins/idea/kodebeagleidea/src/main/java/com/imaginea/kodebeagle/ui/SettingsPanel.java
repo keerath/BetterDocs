@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SettingsPanel implements Configurable {
     public static final String KODE_BEAGLE_SETTINGS = "KodeBeagle Settings";
+    protected static final String BEAGLE_ID = "Beagle Id";
     private static final String COLUMN_SPECS = "pref, pref:grow";
     private static final String ROW_SPECS = "pref, pref, pref, pref, pref, pref, pref";
     private static final String ELASTIC_SEARCH_URL = "Elastic Search URL";
@@ -41,10 +42,9 @@ public class SettingsPanel implements Configurable {
     private static final String DISTANCE_FROM_CURSOR = "Distance from cursor";
     private static final String EXCLUDE_IMPORT_LIST = "Exclude imports";
     private static final String HELP_TEXT =
-        "Please enter comma separated regex"
-            + "(e.g. java.util.[A-Z][a-z0-9]*, org.slf4j.Logger)";
+            "Please enter comma separated regex"
+                    + "(e.g. java.util.[A-Z][a-z0-9]*, org.slf4j.Logger)";
     private static final String MAX_TINY_EDITORS = "Featured Count";
-    protected static final String BEAGLE_ID = "Beagle Id";
     private static final CellConstraints TOP_LEFT = new CellConstraints().xy(1, 1);
     private static final CellConstraints TOP_RIGHT = new CellConstraints().xy(2, 1);
     private static final CellConstraints FIRST_LEFT = new CellConstraints().xy(1, 2);
@@ -59,7 +59,7 @@ public class SettingsPanel implements Configurable {
     private static final CellConstraints FIFTH_RIGHT = new CellConstraints().xy(2, 6);
     private static final CellConstraints SIXTH_RIGHT = new CellConstraints().xy(2, 7);
     private static final Integer HELPTEXT_FONTSIZE = 12;
-
+    private final PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
     private JTextField excludeImportsText;
     private JTextField sizeText;
     private JTextField distanceText;
@@ -87,7 +87,6 @@ public class SettingsPanel implements Configurable {
                 COLUMN_SPECS,
                 ROW_SPECS);
 
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
         JLabel esURL = new JLabel(ELASTIC_SEARCH_URL);
         esURL.setVisible(true);
 
@@ -140,7 +139,7 @@ public class SettingsPanel implements Configurable {
 
         if (propertiesComponent.isValueSet(RefreshAction.EXCLUDE_IMPORT_LIST)) {
             excludeImportsText.setText(propertiesComponent.getValue(RefreshAction.
-                                       EXCLUDE_IMPORT_LIST));
+                    EXCLUDE_IMPORT_LIST));
         }
 
         maxTinyEditorsText = new JTextField();
@@ -179,12 +178,47 @@ public class SettingsPanel implements Configurable {
 
     @Override
     public final boolean isModified() {
-        return true;
+        boolean isModified = false;
+        String oldEsURLValue = propertiesComponent.getValue(RefreshAction.ES_URL,
+                RefreshAction.ES_URL_DEFAULT);
+        String oldSizeValue = propertiesComponent.getValue(RefreshAction.SIZE,
+                String.valueOf(RefreshAction.SIZE_DEFAULT_VALUE));
+        String oldDistanceValue = propertiesComponent.getValue(RefreshAction.DISTANCE,
+                String.valueOf(RefreshAction.DISTANCE_DEFAULT_VALUE));
+        String oldExcludeImportsValue = propertiesComponent.getValue(
+                RefreshAction.EXCLUDE_IMPORT_LIST,
+                RefreshAction.EXCLUDE_IMPORT_LIST_DEFAULT);
+        String oldMaxTinyEditorsValue = propertiesComponent.getValue(
+                RefreshAction.MAX_TINY_EDITORS,
+                String.valueOf(RefreshAction.MAX_EDITORS_DEFAULT_VALUE));
+        String newEsURLValue = esURLText.getText();
+        String newSizeValue = sizeText.getText();
+        String newDistanceValue = distanceText.getText();
+        String newExcludeImportsValue = excludeImportsText.getText();
+        String newMaxTinyEditorsValue = maxTinyEditorsText.getText();
+
+        if (!oldEsURLValue.equals(newEsURLValue)) {
+            isModified = true;
+        }
+        if (!oldSizeValue.equals(newSizeValue)) {
+            isModified = true;
+        }
+        if (!oldDistanceValue.equals(newDistanceValue)) {
+            isModified = true;
+        }
+        if (!oldExcludeImportsValue.equals(newExcludeImportsValue)) {
+            isModified = true;
+        }
+        if (!oldMaxTinyEditorsValue.equals(newMaxTinyEditorsValue)) {
+            isModified = true;
+        }
+
+        return isModified;
     }
 
     @Override
     public final void apply() {
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
+
         String esURLValue = esURLText.getText();
         String sizeValue = sizeText.getText();
         String distanceValue = distanceText.getText();
@@ -194,32 +228,30 @@ public class SettingsPanel implements Configurable {
         propertiesComponent.setValue(RefreshAction.SIZE, sizeValue);
         propertiesComponent.setValue(RefreshAction.DISTANCE, distanceValue);
         propertiesComponent.setValue(RefreshAction.EXCLUDE_IMPORT_LIST,
-                                      excludeImportsValues);
+                excludeImportsValues);
         propertiesComponent.setValue(RefreshAction.MAX_TINY_EDITORS,
-                                      maxTinyEditorsValue);
+                maxTinyEditorsValue);
     }
 
     @Override
     public final void reset() {
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-        esURLText.setText(propertiesComponent.
-                            getValue(RefreshAction.ES_URL,
-                                    RefreshAction.ES_URL_DEFAULT));
-        sizeText.setText(propertiesComponent.
-                            getValue(RefreshAction.SIZE,
-                                    String.valueOf(RefreshAction.SIZE_DEFAULT_VALUE)));
-        distanceText.setText(propertiesComponent.
-                            getValue(RefreshAction.DISTANCE,
-                                    String.valueOf(RefreshAction.DISTANCE_DEFAULT_VALUE)));
-
+        if (propertiesComponent.isValueSet(RefreshAction.ES_URL)) {
+            esURLText.setText(propertiesComponent.getValue(RefreshAction.ES_URL));
+        }
+        if (propertiesComponent.isValueSet(RefreshAction.SIZE)) {
+            sizeText.setText(propertiesComponent.getValue(RefreshAction.SIZE));
+        }
+        if (propertiesComponent.isValueSet(RefreshAction.DISTANCE)) {
+            distanceText.setText(propertiesComponent.getValue(RefreshAction.DISTANCE));
+        }
         if (propertiesComponent.isValueSet(RefreshAction.EXCLUDE_IMPORT_LIST)) {
             excludeImportsText.setText(propertiesComponent.getValue(RefreshAction.
-                                       EXCLUDE_IMPORT_LIST));
+                    EXCLUDE_IMPORT_LIST));
         }
-
-        maxTinyEditorsText.setText(propertiesComponent.
-                            getValue(RefreshAction.MAX_TINY_EDITORS,
-                                    String.valueOf(RefreshAction.MAX_EDITORS_DEFAULT_VALUE)));
+        if (propertiesComponent.isValueSet(RefreshAction.MAX_TINY_EDITORS)) {
+            maxTinyEditorsText.setText(propertiesComponent.getValue(
+                    RefreshAction.MAX_TINY_EDITORS));
+        }
     }
 
     @Override

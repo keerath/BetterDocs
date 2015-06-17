@@ -89,6 +89,7 @@ public class RefreshAction extends AnAction {
     private static final String QUERYING = "Querying";
     private static final String FOR = "for";
     public static final String EXCLUDE_IMPORT_LIST = "Exclude imports";
+    public static final String EXCLUDE_IMPORT_LIST_DEFAULT = "";
     public static final String HELP_MESSAGE =
             "<html>Got nothing to search. To begin using, "
                     + "<br /> please select some code and hit <img src='"

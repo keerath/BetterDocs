@@ -151,3 +151,17 @@
 #### 25. [idea] #50 results will be updated on opening plugin window 
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/50> #50 </a>
 1. Every time plugin is opened(if previously it's hidden) results get automatically refreshed.
+
+#### 26. [idea] #184 Fixed functionality of reset button in Settings Panel,
+#### 'Reset' and 'Apply' buttons appear when values are changed.
+##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/184'> #184 </a>
+1. Open settings panel from main window and type some values and click 'Ok' or 'Apply'.<br>
+<img src = 'screenshots/initially-applying-settings.png'/>
+2. Reopen the panel and all the values that were persisted or previously applied should be displayed.<br>
+<img src = 'screenshots/reopening-to-check-settings.png'/>
+3. Also when there is a change in any of the values from previous values, the 'Apply' and 'Reset' button should appear.<br>
+<img src = 'screenshots/modified-settings.png'/>
+4. Open settings panel and make some changes in the values without clicking on 'Apply'.<br>
+<img src = 'screenshots/before-reset.png'/>
+5. Click on 'Reset' Button which should reset all the values to previously set values.<br>
+<img src = 'screenshots/after-reset.png'/>
