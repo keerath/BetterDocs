@@ -56,12 +56,15 @@ public class URLValidator extends AbstractValidator {
         if (!validateUrl(this.getjTextField().getText())) {
             if (this.getjTextField().getText().equals("")) {
                 this.getValidationLabel().setText(this.getNameOfField() + NOT_EMPTY);
+                this.getValidationLabel().setVisible(true);
             } else {
                 this.getValidationLabel().setText(this.getNameOfField()
                         + NOT_URL);
+                this.getValidationLabel().setVisible(true);
             }
         } else {
             this.getValidationLabel().setText("");
+            this.getValidationLabel().setVisible(false);
         }
     }
 }

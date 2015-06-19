@@ -11,7 +11,7 @@
 
 #### 3. [ideaplugin] show help info should autmatically bring the focus to main pane.
 ##### Display the content centered.
-1. When help message is displayed all pane should get focus and help content should be in 			center.
+1. When help message is displayed all pane should get focus and help content should be in center.
 
 #### 4. [ideaplugin] #141 Plugin throwing AIOBE has been fixed.
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/141'> #141 </a>
@@ -152,7 +152,6 @@
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/50'> #50 </a>
 1. Every time plugin is opened(if previously it's hidden) results get automatically refreshed.
 
-<<<<<<< HEAD
 #### 26. [idea] #184 Fixed functionality of reset button in Settings Panel,
 #### 'Reset' and 'Apply' buttons appear when values are changed.
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/184'> #184 </a>
@@ -160,7 +159,8 @@
 <img src = 'screenshots/initially-applying-settings.png'/>
 2. Reopen the panel and all the values that were persisted or previously applied should be displayed.<br>
 <img src = 'screenshots/reopening-to-check-settings.png'/>
-3. Also when there is a change in any of the values from previous values, the 'Apply' and 'Reset' button should appear.<br>
+3. Also when there is a change in any of the values from previous values, the 'Apply' and 'Reset' 
+button should appear.<br>
 <img src = 'screenshots/modified-settings.png'/>
 4. Open settings panel and make some changes in the values without clicking on 'Apply'.<br>
 <img src = 'screenshots/before-reset.png'/>
@@ -176,21 +176,17 @@
 #### 28. [idea] #203 Validation of User Input in Settings Panel 
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/203'> #203 </a>
 1. Open Settings Panel from Main Window.
-2. Type in a negative value in any of fields which accept integer input. Eg- Distance from Cursor,
-Result Size or Featured Count. It should indicate saying that only digits from [0-9]
-are allowed.<br>
-<img src = 'screenshots/distance-negative.png'/>
-3. Leave any of the text boxes empty. It should indicate saying that no empty field
-is allowed.<br>
-<img src = 'screenshots/distance-null.png'/>
-4. Enter any random value in the Elastic URL text box. It should indicate saying that the URL is
-not well formed.<br>
-<img src = 'screenshots/url-deformed.png'/>
-5. Enter more than three digits in the Result Size box. It should not allow you to enter any more
-i.e the maximum result size can be 999.<br>
-<img src = 'screenshots/result-digit-limit.png'/>
-6. Enter more than two digits in the Featured Count box. It should not allow you to enter any more
-i.e 99 can be the maximum featured count.<br>
-<img src = 'screenshots/featured-count-digit-limit.png'/>
-
+2. Type illegal values such as empty values, values with special characters in the distance, result size, featured
+count. It should indicate respective warning messages.<br>
+<img src = 'screenshots/multiple-validations.png'/>
+3. Type a deformed URL in the Elastic Search URL box. It should indicate saying that its not a well formed 
+URL.<br>
+<img src = 'screenshots/url-deformed.png'/><br>
+4.Enter values more than 200, 500, 15 for distance, result size and featured count respectively. It should
+indicate saying that values more than these limits are not allowed.<br>
+<img src = 'screenshots/value-limit.png'/><br>
+5.Try entering more than 9 digits in distance, result size and featured count and it will not allow you to.<br>
+<img src = 'screenshots/digit-limit.png'/><br>
+6.Try clicking on 'Apply' button when there are validation errors. The apply button will not fade indicating that
+these values can't be applied.<br>
 

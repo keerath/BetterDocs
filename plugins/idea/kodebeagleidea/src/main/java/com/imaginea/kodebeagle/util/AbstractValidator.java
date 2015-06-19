@@ -26,6 +26,8 @@ public abstract class AbstractValidator implements KeyListener {
     private JTextField jTextField;
     private JLabel validationLabel;
     private String nameOfField;
+    private int upperLimit;
+
 
     public final JTextField getjTextField() {
         return jTextField;
@@ -49,5 +51,13 @@ public abstract class AbstractValidator implements KeyListener {
 
     public final void setNameOfField(final String pNameOfField) {
         this.nameOfField = pNameOfField;
+    }
+
+    public final int getUpperLimit() {
+        return upperLimit;
+    }
+
+    public final void setUpperLimit(final int pUpperLimit) {
+        this.upperLimit = pUpperLimit;
     }
 }

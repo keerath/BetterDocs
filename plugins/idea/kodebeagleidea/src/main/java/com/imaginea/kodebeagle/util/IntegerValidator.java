@@ -24,20 +24,27 @@ import javax.swing.JTextField;
 public class IntegerValidator extends AbstractValidator {
 
     private static final String ONLY_DIGITS = " can have only digits [0-9]!";
+    private static final String LESS_THAN_LIMIT = " should be less than ";
 
     public IntegerValidator(final String nameOfField,
                             final JTextField jTextField,
-                            final JLabel validationLabel) {
+                            final JLabel validationLabel, final int upperLimit) {
+
         jTextField.addKeyListener(this);
         this.setjTextField(jTextField);
         this.setNameOfField(nameOfField);
         this.setValidationLabel(validationLabel);
-
+        this.setUpperLimit(upperLimit);
     }
 
-    public final boolean validateInteger(final String integer) {
-        boolean matches = integer.matches("^\\d+$");
-        return matches;
+
+    private boolean validateInteger(final String integer) {
+        return integer.matches("^\\d+$");
+    }
+
+    private boolean lessThanUpperLimit(final String integer, final int upperLimit) {
+        return Integer.parseInt(integer) <= upperLimit;
+
     }
 
     @Override
@@ -53,14 +60,22 @@ public class IntegerValidator extends AbstractValidator {
     @Override
     public final void keyReleased(final KeyEvent e) {
         if (!validateInteger(this.getjTextField().getText())) {
-            if (this.getjTextField().getText().equals("")) {
+            if (this.getjTextField().getText().isEmpty()) {
                 this.getValidationLabel().setText(this.getNameOfField() + NOT_EMPTY);
+                this.getValidationLabel().setVisible(true);
             } else {
                 this.getValidationLabel().setText(this.getNameOfField()
                         + ONLY_DIGITS);
+                this.getValidationLabel().setVisible(true);
             }
+        } else if (!lessThanUpperLimit(this.getjTextField().getText(), this.getUpperLimit())) {
+            this.getValidationLabel().setText(this.getNameOfField()
+                    + LESS_THAN_LIMIT + this.getUpperLimit());
+            this.getValidationLabel().setVisible(true);
+
         } else {
             this.getValidationLabel().setText("");
+            this.getValidationLabel().setVisible(false);
         }
     }
 }
