@@ -121,6 +121,7 @@ public class RefreshAction extends AnAction {
     public static final int MAX_EDITORS_DEFAULT_VALUE = 10;
     public static final String MAX_TINY_EDITORS = "maxTinyEditors";
     private static final String PROJECT_ERROR = "Unable to get Project. Please Try again";
+    private static final int CHUNK_SIZE = 5;
 
     private WindowObjects windowObjects = WindowObjects.getInstance();
     private WindowEditorOps windowEditorOps = new WindowEditorOps();
@@ -204,7 +205,9 @@ public class RefreshAction extends AnAction {
                 codePaneTinyEditorsInfoList = getCodePaneTinyEditorsInfoList(projectNodes);
                 List<String> fileNamesList =
                         getFileNamesListForTinyEditors(codePaneTinyEditorsInfoList);
-                esUtils.putContentsForFileInMap(fileNamesList);
+                if (fileNamesList != null) {
+                    putChunkedFileContentInMap(fileNamesList);
+                }
             }
         }
         indicator.setFraction(1.0);
@@ -217,6 +220,17 @@ public class RefreshAction extends AnAction {
             fileNamesList.add(codePaneTinyEditorInfo.getFileName());
         }
         return fileNamesList;
+    }
+
+    private void putChunkedFileContentInMap(final List<String> fileNamesList) {
+        int head = 0;
+        int tail = CHUNK_SIZE - 1;
+        for (int i = 1; i <= (fileNamesList.size() / CHUNK_SIZE); i++) {
+            List<String> subFileNamesList = fileNamesList.subList(head, tail);
+            esUtils.putContentsForFileInMap(subFileNamesList);
+            head = tail + 1;
+            tail += CHUNK_SIZE;
+        }
     }
 
     private void updateMainPaneJTreeUI(final JTree jTree, final DefaultTreeModel model,

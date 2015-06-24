@@ -75,7 +75,7 @@ public class SettingsPanel implements Configurable {
     private static final Integer HELPTEXT_FONTSIZE = 12;
     private static final int DIGIT_LIMIT = 9;
     private static final int SIZE_LIMIT = 500;
-    private static final int FEATURED_COUNT_LIMIT = 15;
+    private static final int FEATURED_COUNT_LIMIT = 150;
     private static final int DISTANCE_LIMIT = 200;
     private static final int INDEX_DISTANCE = 0;
     private static final int INDEX_SIZE = 1;

@@ -190,3 +190,9 @@ indicate saying that values more than these limits are not allowed.<br>
 6.Try clicking on 'Apply' button when there are validation errors. The apply button will not fade indicating that
 these values can't be applied.<br>
 
+#### 29. [idea] #211 Bad request due to long URL when fecthing many featured results (eg.featured count = 100)
+##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/211'> #211 </a>
+1. Open Settings Panel from Main Window.
+2. Type in a value greater than 30 for featured count.<br>
+<img src = 'screenshots/after-chunking.png'/><br>
+3. Results will be fetched without a Bad Request or Bad Gateway error.
