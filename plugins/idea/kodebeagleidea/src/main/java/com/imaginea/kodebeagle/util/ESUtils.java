@@ -58,6 +58,11 @@ public class ESUtils {
 
     private static WindowObjects windowObjects = WindowObjects.getInstance();
     private JSONUtils jsonUtils = new JSONUtils();
+    private int resultCount;
+
+    public final int getResultCount() {
+        return resultCount;
+    }
 
      public final void putContentsForFileInMap(final List<String> fileNames) {
         String esFileQueryJson = jsonUtils.getJsonForFileContent(fileNames);
@@ -92,6 +97,7 @@ public class ESUtils {
     public final Map<String, String> getFileTokens(final String esResultJson) {
         Map<String, String> fileTokenMap = new HashMap<String, String>();
         JsonArray hitsArray = getJsonElements(esResultJson);
+        resultCount = hitsArray.size();
 
         for (JsonElement hits : hitsArray) {
             JsonObject hitObject = hits.getAsJsonObject();
