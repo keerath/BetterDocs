@@ -33,14 +33,16 @@ import java.util.List;
 import java.util.Set;
 
 public class JSONUtils {
-    private static final String CUSTOM_TOKENS_IMPORT_NAME = "custom.tokens.importName";
+    private static final String CUSTOM_TOKENS_IMPORT_NAME = "typeimportsmethods.tokens.importName";
     private static final String IMPORT_NAME = "importName";
+    private static final String IMPORT_EXACT_NAME = "importExactName";
     private static final String LINE_NUMBERS = "lineNumbers";
     private static final String SORT_ORDER = "desc";
     private static final String ID = "id";
     private static final String TYPEREPOSITORY_ID = "typerepository.id";
     private static final String TYPESOURCEFILENAME_FILENAME = "typesourcefile.fileName";
     private static final String FILE_NAME = "fileName";
+    private static final String LINE_NUMBER = "lineNumber";
 
     public final String getJsonForFileContent(final List<String> fileNameList) {
         ESFileContent esFileContent = new ESFileContent();
@@ -128,9 +130,10 @@ public class JSONUtils {
             bool.setShould(new ArrayList<ESQuery.Must>());
             term = new ESQuery.Term();
             must.setTerm(term);
-            term.setImportName(nextImport);
+            term.setImportName(nextImport.toLowerCase());
             mustList.add(must);
         }
+
 
         Gson gson = new Gson();
         return gson.toJson(esQuery).replaceAll(IMPORT_NAME, CUSTOM_TOKENS_IMPORT_NAME);
@@ -142,14 +145,14 @@ public class JSONUtils {
         JsonReader reader = new JsonReader(new StringReader(tokens));
         reader.setLenient(true);
         JsonArray tokensArray = new JsonParser().parse(reader).getAsJsonArray();
-
         for (JsonElement token : tokensArray) {
             JsonObject jObject = token.getAsJsonObject();
-            String importName = jObject.getAsJsonPrimitive(IMPORT_NAME).getAsString();
+            String importName = jObject.getAsJsonPrimitive(IMPORT_EXACT_NAME).getAsString();
             if (imports.contains(importName)) {
                 JsonArray lineNumbersArray = jObject.getAsJsonArray(LINE_NUMBERS);
-                for (JsonElement lineNumber : lineNumbersArray) {
-                    lineNumbers.add(lineNumber.getAsInt());
+                for (JsonElement lineNumberInfo : lineNumbersArray) {
+                    lineNumbers.add(lineNumberInfo.getAsJsonObject()
+                            .getAsJsonPrimitive(LINE_NUMBER).getAsInt());
                 }
             }
         }

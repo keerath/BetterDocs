@@ -32,7 +32,7 @@ class ESQueryJsonSuite extends FunSuite with BeforeAndAfterAll{
     val size = 10
     val actualJSON = new JSONUtils().getESQueryJson(imortsSet, size)
     val expectedJSON = "{\"query\":{\"bool\":{\"must\":[" +
-      "{\"term\":{\"custom.tokens.importName\":\"java.util.Map\"}}]," +
+      "{\"term\":{\"typeimportsmethods.tokens.importName\":\"java.util.map\"}}]," +
       "\"mustNot\":[],\"should\":[]}},\"from\":0,\"size\":10," +
       "\"sort\":[{\"score\":{\"order\":\"desc\"}}]}"
 

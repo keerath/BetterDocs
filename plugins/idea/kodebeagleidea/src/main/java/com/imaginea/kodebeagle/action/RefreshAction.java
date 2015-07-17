@@ -80,7 +80,7 @@ public class RefreshAction extends AnAction {
     public static final String ES_URL = "esURL";
     public static final String DISTANCE = "distance";
     public static final String SIZE = "size";
-    private static final String KODEBEAGLE_SEARCH = "/kodebeagle/_search?source=";
+    private static final String KODEBEAGLE_SEARCH = "/importsmethods/_search?source=";
     public static final String ES_URL_DEFAULT = "http://labs.imaginea.com/kodebeagle";
     public static final int DISTANCE_DEFAULT_VALUE = 0;
     public static final int SIZE_DEFAULT_VALUE = 30;
