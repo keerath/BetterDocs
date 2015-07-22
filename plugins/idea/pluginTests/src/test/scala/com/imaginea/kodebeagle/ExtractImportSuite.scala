@@ -74,16 +74,24 @@ class ExtractImportSuite extends FunSuite with BeforeAndAfterAll {
     "import java.util.HashSet",
     "import java.util.List",
     "import java.util.Set",
-    "import java.util.Iterator"
+    "import java.util.Iterator",
+    "import java.io.File",
+    "import javax.swing.JComponent"
     )
-    val excludeImport: String = "java.*.*HashSet ,  java.io.*FileInputStream ,java.util.List"
+    val excludeImport = Set(
+      "java.util.Array*",
+      "java.io.*InputStream",
+      "javax.swing.*"
+    )
     val editorDocOps = new EditorDocOps().excludeConfiguredImports(imports,excludeImport)
+    print(editorDocOps.toSet)
     val expectedImports = Set(
-      "import java.io.BufferedInputStream",
       "import java.nio.channels.FileChannel",
-      "import java.util.ArrayList",
       "import java.util.Set",
-      "import java.util.Iterator"
+      "import java.util.Iterator",
+      "import java.util.List",
+      "import java.util.HashSet",
+      "import java.io.File"
     )
     assert(editorDocOps.toSet === expectedImports)
   }

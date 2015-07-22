@@ -61,7 +61,7 @@ Supported Languages: Java</p>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="KodeBeagle" icon="AllIcons.Toolwindows.Documentation" anchor="right" factoryClass="com.imaginea.kodebeagle.ui.MainWindow"/>
-        <applicationConfigurable instance="com.imaginea.kodebeagle.ui.SettingsPanel"/>
+        <applicationConfigurable instance="com.imaginea.kodebeagle.ui.SettingsConfigurable"/>
     </extensions>
 </idea-plugin>
 

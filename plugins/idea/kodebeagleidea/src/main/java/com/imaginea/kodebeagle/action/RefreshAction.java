@@ -21,6 +21,7 @@ import com.imaginea.kodebeagle.model.CodeInfo;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import com.imaginea.kodebeagle.ui.MainWindow;
 import com.imaginea.kodebeagle.ui.ProjectTree;
+import com.imaginea.kodebeagle.model.Settings;
 import com.imaginea.kodebeagle.ui.WrapLayout;
 import com.imaginea.kodebeagle.util.ESUtils;
 import com.imaginea.kodebeagle.util.EditorDocOps;
@@ -29,7 +30,6 @@ import com.imaginea.kodebeagle.util.WindowEditorOps;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.DataManager;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -49,6 +49,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.classFilter.ClassFilter;
 import com.intellij.ui.JBColor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -76,18 +77,23 @@ public class RefreshAction extends AnAction {
             "<html>Elastic Search URL <br> %s <br> in idea settings is incorrect.<br> See "
                     + "<img src='" + AllIcons.General.Settings + "'/></html>";
     public static final String ES_URL = "esURL";
-    public static final String DISTANCE = "distance";
+    public static final String ES_URL_VALUES = "esURL Values";
+    public static final String ES_URL_CHECKBOX_VALUE = "Es URL checkbox value";
+    public static final String ES_URL_DEFAULT_CHECKBOX_VALUE = "false";
+    public static final String LINES_FROM_CURSOR = "lines";
     public static final String SIZE = "size";
     private static final String KODEBEAGLE_SEARCH = "/importsmethods/_search?source=";
     public static final String ES_URL_DEFAULT = "http://labs.imaginea.com/kodebeagle";
-    public static final int DISTANCE_DEFAULT_VALUE = 0;
+    public static final int LINES_FROM_CURSOR_DEFAULT_VALUE = 0;
     public static final int SIZE_DEFAULT_VALUE = 30;
     private static final String EDITOR_ERROR = "Could not get any active editor";
     private static final String FORMAT = "%s %s %s";
     private static final String QUERIED = "Queried";
     private static final String FOR = "for";
-    public static final String EXCLUDE_IMPORT_LIST = "Exclude imports";
-    public static final String EXCLUDE_IMPORT_LIST_DEFAULT = "";
+    public static final String EXCLUDE_IMPORT_PATTERN = "Exclude imports pattern";
+    public static final String EXCLUDE_IMPORT_CHECKBOX_VALUE = "Exclude imports checkbox value";
+    public static final String EXCLUDE_IMPORT_DEFAULT_CHECKBOX_VALUE = "false";
+    public static final String EXCLUDE_IMPORT_STATE = "Exclude imports state";
     public static final String HELP_MESSAGE =
             "<html>Got nothing to search. To begin using, "
                     + "<br /> please select some code and hit <img src='"
@@ -113,26 +119,25 @@ public class RefreshAction extends AnAction {
     private static final String FETCHING_FILE_CONTENTS = "Fetching file contents...";
     public static final String KODEBEAGLE = "KodeBeagle";
     private static final double INDICATOR_FRACTION = 0.5;
-    public static final int MAX_EDITORS_DEFAULT_VALUE = 10;
-    public static final String MAX_TINY_EDITORS = "maxTinyEditors";
+    public static final int TOP_COUNT_DEFAULT_VALUE = 10;
+    public static final String TOP_COUNT = "Top count";
     private static final String PROJECT_ERROR = "Unable to get Project. Please Try again";
     private static final int CHUNK_SIZE = 5;
     private static final double CONVERT_TO_SECONDS = 1000000000.0;
     private static final String RESULT_NOTIFICATION_FORMAT =
             "<br/> Showing %d of %d results (%.2f seconds)";
-
+    private static final int HGAP = 20;
+    private static final int VGAP = 5;
+    private final WrapLayout wrapLayout = new WrapLayout(FlowLayout.CENTER, HGAP, VGAP);
     private WindowObjects windowObjects = WindowObjects.getInstance();
     private WindowEditorOps windowEditorOps = new WindowEditorOps();
     private ProjectTree projectTree = new ProjectTree();
     private EditorDocOps editorDocOps = new EditorDocOps();
     private ESUtils esUtils = new ESUtils();
     private JSONUtils jsonUtils = new JSONUtils();
-    private PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
+    private Settings currentSettings;
     private List<CodeInfo> codePaneTinyEditorsInfoList = new ArrayList<CodeInfo>();
     private int maxTinyEditors;
-    private final int hGap = 20;
-    private final int vGap = 5;
-    private final WrapLayout wrapLayout = new WrapLayout(FlowLayout.CENTER, hGap, vGap);
 
     public RefreshAction() {
         super(KODEBEAGLE, KODEBEAGLE, AllIcons.Actions.Refresh);
@@ -376,18 +381,27 @@ public class RefreshAction extends AnAction {
     private Set<String> getFinalImports(final Document document) {
         Set<String> imports = editorDocOps.getImports(document);
         if (!imports.isEmpty()) {
-            if (propertiesComponent.isValueSet(EXCLUDE_IMPORT_LIST)) {
-                String excludeImport = propertiesComponent.getValue(EXCLUDE_IMPORT_LIST);
-                if (excludeImport != null) {
-                    imports = editorDocOps.excludeConfiguredImports(imports, excludeImport);
+            if (currentSettings.getExcludeImportsCheckBoxValue()) {
+                List<ClassFilter> importFilters =
+                        currentSettings.getFilterList();
+                Set<String> excludeImports = new HashSet<>();
+                for (ClassFilter importFilter : importFilters) {
+                    if (importFilter.isEnabled()) {
+                        excludeImports.add(importFilter.getPattern());
+                    }
+                }
+                if (!excludeImports.isEmpty()) {
+                    imports = editorDocOps.excludeConfiguredImports(imports, excludeImports);
                 }
             }
             Set<String> internalImports =
                     editorDocOps.getInternalImports(windowObjects.getProject());
             Set<String> finalImports =
                     editorDocOps.excludeInternalImports(imports, internalImports);
+
             return finalImports;
         }
+
         return imports;
     }
 
@@ -401,14 +415,13 @@ public class RefreshAction extends AnAction {
     public final void init() throws IOException {
         DataContext dataContext = DataManager.getInstance().getDataContext();
         Project project = (Project) dataContext.getData(DataConstants.PROJECT);
+        currentSettings = new Settings();
         if (project != null) {
             windowObjects.setProject(project);
-            windowObjects.setDistance(propertiesComponent.
-                    getOrInitInt(DISTANCE, DISTANCE_DEFAULT_VALUE));
-            windowObjects.setSize(propertiesComponent.getOrInitInt(SIZE, SIZE_DEFAULT_VALUE));
-            windowObjects.setEsURL(propertiesComponent.getValue(ES_URL, ES_URL_DEFAULT));
-            maxTinyEditors =
-                    propertiesComponent.getOrInitInt(MAX_TINY_EDITORS, MAX_EDITORS_DEFAULT_VALUE);
+            windowObjects.setDistance(currentSettings.getLimits().getLinesFromCursor());
+            windowObjects.setSize(currentSettings.getLimits().getResultSize());
+            windowObjects.setEsURL(currentSettings.getEsURLComboBoxModel().getSelectedEsURL());
+            maxTinyEditors = currentSettings.getLimits().getTopCount();
             windowEditorOps.writeToDocument("", windowObjects.getWindowEditor().getDocument());
             runAction();
         } else {

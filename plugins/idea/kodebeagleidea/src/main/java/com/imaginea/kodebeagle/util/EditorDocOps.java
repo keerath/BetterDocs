@@ -178,13 +178,13 @@ public class EditorDocOps {
             if (directory != null) {
                 final PsiDirectory[] subdirectories = directory.getSubdirectories();
                 for (PsiDirectory subdirectory : subdirectories) {
-                         final JavaDirectoryService jDirService =
-                                JavaDirectoryService.getInstance();
-                        if (jDirService != null && subdirectory != null
-                                && jDirService.getPackage(subdirectory) != null) {
-                            final PsiPackage rootPackage = jDirService.getPackage(subdirectory);
-                            getCompletePackage(rootPackage, scope, internalImports);
-                        }
+                    final JavaDirectoryService jDirService =
+                            JavaDirectoryService.getInstance();
+                    if (jDirService != null && subdirectory != null
+                            && jDirService.getPackage(subdirectory) != null) {
+                        final PsiPackage rootPackage = jDirService.getPackage(subdirectory);
+                        getCompletePackage(rootPackage, scope, internalImports);
+                    }
                 }
             }
         }
@@ -206,7 +206,7 @@ public class EditorDocOps {
     }
 
     public final Set<String> excludeInternalImports(final Set<String> imports,
-                                                     final Set<String> internalImports) {
+                                                    final Set<String> internalImports) {
         boolean matchFound;
         Set<String> externalImports = new HashSet<String>();
         for (String nextImport : imports) {
@@ -226,8 +226,7 @@ public class EditorDocOps {
     }
 
     public final Set<String> excludeConfiguredImports(final Set<String> imports,
-            final String excludeImport) {
-        Set<String> excludeImports = getExcludeImports(excludeImport);
+                                                      final Set<String> excludeImports) {
         Set<String> excludedImports = new HashSet<String>();
         imports.removeAll(excludeImports);
         excludedImports.addAll(imports);
@@ -241,24 +240,10 @@ public class EditorDocOps {
                     }
                 }
             } catch (PatternSyntaxException e) {
-               e.printStackTrace();
-           }
-        }
-        return excludedImports;
-    }
-
-    private Set<String> getExcludeImports(final String excludeImport) {
-        Set<String> excludeImports = new HashSet<String>();
-
-        if (!excludeImport.isEmpty()) {
-            String[] excludeImportsArray = excludeImport.split(",");
-
-            for (String imports : excludeImportsArray) {
-                  String replacingDot = imports.replace(".", "\\.");
-                  excludeImports.add(replacingDot.replaceAll("\\*", ".*").trim());
+                e.printStackTrace();
             }
         }
-        return excludeImports;
+        return excludedImports;
     }
 
     public final VirtualFile getVirtualFile(final String fileName, final String contents) {
@@ -355,7 +340,7 @@ public class EditorDocOps {
     }
 
     public final String getContentsInLines(final String fileContents,
-                                              final List<Integer> lineNumbersList) {
+                                           final List<Integer> lineNumbersList) {
         Document document = EditorFactory.getInstance().createDocument(fileContents);
         Set<Integer> lineNumbersSet = new TreeSet<Integer>(lineNumbersList);
 

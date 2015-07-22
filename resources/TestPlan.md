@@ -239,3 +239,24 @@ these values can't be applied.<br>
 1. Open KodeBeagle plugin, select some code from any .class file and hit refresh action. It will show information message
 "Currently KodeBeagle supports "java" files only".<br>
 <img src = 'screenshots/271.png'/><br>
+
+#### 37. [idea] #242 Rework of Settings Panel
+##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/242'> #242 </a>
+1. In settings panel, a user can select "Lines From Cursor" by sliding the cursor and a feedback to the user <br>
+is shown in a textbox right next to it which is on focus when the slider moves.<br>
+<img src = 'screenshots/slider-feedback.png'><br>
+2. In settings panel, spinners are used for selecting "Result Size" and "Top Count" which increase in steps of <br> 
+5 with their maximum values as 50 and 20 respectively.<br><br>
+3. In settings panel, a user can add imports clicking on the add imports button under "Configure Imports Section" <br>
+which displays a dialog box to enter the import pattern.<br>
+<img src = 'screenshots/add-import-pattern.png'><br>
+4. In settings panel, a user can edit already added imports by simply double clicking on the import<br>
+<img src = 'screenshots/edit-import-pattern.png'><br>
+5. In settings panel, a user can override the existing Elastic Search URL by checking the "Override" checkbox<br> 
+which focuses on the "Elastic Search URL" combo box and makes it enabled which allows input.<br>
+<img src = 'screenshots/override-url.png'><br>
+6. In settings panel, when a user overrides the default Elastic Search URL any URL entered in the combo box is <br> 
+persisted. Thus a user can see the history of all his applied URLs.<br>
+<img src = 'screenshots/combo-box-history.png'><br>
+7. In settings panel, the override checkbox for Elastic Search URL when unchecked restores the value to default value.
+
