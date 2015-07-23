@@ -84,27 +84,27 @@ public class MainWindow implements ToolWindowFactory {
 
         initSystemInfo();
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(PROJECTS);
-
         JTree jTree = new Tree(root);
         jTree.setRootVisible(false);
         jTree.setAutoscrolls(true);
 
-        if (!propertiesComponent.isValueSet(SettingsPanel.BEAGLE_ID)) {
+        if (!propertiesComponent.isValueSet(SettingsConfigurable.BEAGLE_ID)) {
             windowObjects.setBeagleId(UUID.randomUUID().toString());
-            propertiesComponent.setValue(SettingsPanel.BEAGLE_ID, windowObjects.getBeagleId());
+            propertiesComponent.setValue(SettingsConfigurable.BEAGLE_ID,
+                    windowObjects.getBeagleId());
         } else {
-            windowObjects.setBeagleId(propertiesComponent.getValue(SettingsPanel.BEAGLE_ID));
+            windowObjects.setBeagleId(propertiesComponent.getValue(SettingsConfigurable.BEAGLE_ID));
         }
 
         Document document = EditorFactory.getInstance().createDocument("");
-        Editor windowEditor = EditorFactory.getInstance().
-                createEditor(document, project, FileTypeManager.getInstance().
-                        getFileTypeByExtension(JAVA), false);
+        Editor windowEditor =
+                EditorFactory.getInstance().createEditor(
+                        document, project, FileTypeManager.getInstance()
+                        .getFileTypeByExtension(JAVA),
+                        false);
         //Dispose the editor once it's no longer needed
         windowEditorOps.releaseEditor(project, windowEditor);
-
         final RefreshAction refreshAction = new RefreshAction();
-
         Keymap keymap = KeymapManager.getInstance().getActiveKeymap();
         if (keymap != null) {
             KeyboardShortcut defShortcut =
@@ -116,7 +116,6 @@ public class MainWindow implements ToolWindowFactory {
         EditSettingsAction editSettingsAction = new EditSettingsAction();
         ExpandProjectTreeAction expandProjectTreeAction = new ExpandProjectTreeAction();
         CollapseProjectTreeAction collapseProjectTreeAction = new CollapseProjectTreeAction();
-
         windowObjects.setTree(jTree);
         windowObjects.setWindowEditor(windowEditor);
 
@@ -131,7 +130,6 @@ public class MainWindow implements ToolWindowFactory {
                 createActionToolbar(KODEBEAGLE, group, true).
                 getComponent();
         toolBar.setBorder(BorderFactory.createCompoundBorder());
-
         toolBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, toolBar.getMinimumSize().height));
 
         JBScrollPane jTreeScrollPane = new JBScrollPane();
@@ -139,7 +137,6 @@ public class MainWindow implements ToolWindowFactory {
         jTreeScrollPane.setAutoscrolls(true);
         jTreeScrollPane.setBackground(JBColor.white);
         windowObjects.setJTreeScrollPane(jTreeScrollPane);
-
 
         final JSplitPane jSplitPane = new JSplitPane(
                         JSplitPane.VERTICAL_SPLIT, jTreeScrollPane, windowEditor.getComponent());
@@ -175,7 +172,6 @@ public class MainWindow implements ToolWindowFactory {
         if (!LegalNotice.isLegalNoticeAccepted()) {
             new LegalNotice(project).showLegalNotice();
         }
-
         toolWindow.getComponent().getParent().add(mainPanel);
     }
 

@@ -17,7 +17,7 @@
 
 package com.imaginea.kodebeagle.action;
 
-import com.imaginea.kodebeagle.ui.SettingsPanel;
+import com.imaginea.kodebeagle.ui.SettingsConfigurable;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -36,6 +36,6 @@ public class EditSettingsAction extends AnAction {
     public final void actionPerformed(final AnActionEvent anActionEvent) {
         ShowSettingsUtil.getInstance().showSettingsDialog(
                 anActionEvent.getData(PlatformDataKeys.PROJECT_CONTEXT),
-                SettingsPanel.KODE_BEAGLE_SETTINGS);
+                SettingsConfigurable.KODE_BEAGLE_SETTINGS);
     }
 }
