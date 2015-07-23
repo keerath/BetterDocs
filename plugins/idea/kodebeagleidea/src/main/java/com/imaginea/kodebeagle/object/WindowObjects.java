@@ -17,6 +17,7 @@
 
 package com.imaginea.kodebeagle.object;
 
+import com.intellij.notification.Notification;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
@@ -48,6 +49,16 @@ public final class WindowObjects {
     private String beagleId;
     private JPanel codePaneTinyEditorsJPanel;
     private JTabbedPane jTabbedPane;
+
+    public Notification getNotification() {
+        return notification;
+    }
+
+    public void setNotification(final Notification pNotification) {
+        this.notification = pNotification;
+    }
+
+    private Notification notification;
 
     private WindowObjects() {
 

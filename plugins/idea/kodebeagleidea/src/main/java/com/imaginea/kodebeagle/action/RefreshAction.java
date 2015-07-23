@@ -522,6 +522,9 @@ public class RefreshAction extends AnAction {
                 projectNodes = doBackEndWork(importsInLines, finalImports, indicator);
                 long endTime = System.nanoTime();
                 double timeToFetchResults = (endTime - startTime) / CONVERT_TO_SECONDS;
+                if (windowObjects.getNotification() != null) {
+                    windowObjects.getNotification().expire();
+                }
                 String notificationTitle = String.format(FORMAT, QUERIED,
                         windowObjects.getEsURL(), FOR);
                 String notificationContent =
@@ -531,6 +534,7 @@ public class RefreshAction extends AnAction {
                         getNotification(notificationTitle, notificationContent,
                                 NotificationType.INFORMATION);
                 Notifications.Bus.notify(notification);
+                windowObjects.setNotification(notification);
             } catch (RuntimeException rte) {
                 rte.printStackTrace();
                 httpErrorMsg = rte.getMessage();

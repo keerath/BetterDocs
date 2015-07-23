@@ -260,3 +260,6 @@ persisted. Thus a user can see the history of all his applied URLs.<br>
 <img src = 'screenshots/combo-box-history.png'><br>
 7. In settings panel, the override checkbox for Elastic Search URL when unchecked restores the value to default value.
 
+#### 38. [idea] #222 Expires previous notification before issuing new notification
+##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/222'> #222 </a>
+1. On hitting "Refresh Action" too many times should not populate the IDE window with notifications.
