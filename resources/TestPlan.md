@@ -268,3 +268,7 @@ persisted. Thus a user can see the history of all his applied URLs.<br>
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/299'> #299 </a>
 1. New settings panel will load values persisted by old settings panel by comparing it with their limits. If the value
 lies in the limit then it will be loaded or else default values will be loaded.
+
+#### 40. [idea] #305 Fixed addition of empty import pattern while configuring imports 
+##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/305'> #305 </a>
+1. While adding import patterns under the configure imports section, if the user tries to add an empty string then no import is added.

@@ -283,13 +283,12 @@ public class PatternFilterEditor extends JPanel implements ComponentWithEmptyTex
                 myProject, myPatternsHelpId);
         if (dialog.showAndGet()) {
             String pattern = dialog.getPattern();
-            if (pattern != null) {
+            if (pattern != null && !pattern.trim().isEmpty()) {
                 com.intellij.ui.classFilter.ClassFilter filter = createFilter(pattern);
                 myTableModel.addRow(filter);
                 int row = myTableModel.getRowCount() - 1;
                 myTable.getSelectionModel().setSelectionInterval(row, row);
                 myTable.scrollRectToVisible(myTable.getCellRect(row, 0, true));
-
                 myTable.requestFocus();
             }
         }
