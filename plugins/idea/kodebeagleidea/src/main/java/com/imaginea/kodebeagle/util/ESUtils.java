@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.imaginea.kodebeagle.action.RefreshAction;
+import com.imaginea.kodebeagle.model.Settings;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,6 +57,7 @@ public class ESUtils {
     private static final String STARGAZERS_COUNT = "stargazersCount";
     private static final String FILE_NAME = "fileName";
     private static final String UID = "&uid=";
+    private static final String OPTED_OUT = "opted-out";
 
     private static WindowObjects windowObjects = WindowObjects.getInstance();
     private JSONUtils jsonUtils = new JSONUtils();
@@ -144,15 +146,21 @@ public class ESUtils {
         try {
             HttpClient httpClient = new DefaultHttpClient();
             String encodedJson = URLEncoder.encode(esQueryJson, UTF_8);
-
-            String esGetURL = url + encodedJson + UID + windowObjects.getBeagleId();
-            String versionInfo = windowObjects.getOsInfo() + "  "
-                    + windowObjects.getApplicationVersion() + "  "
-                    + windowObjects.getPluginVersion();
-
-            HttpGet getRequest = new HttpGet(esGetURL);
-            getRequest.setHeader(USER_AGENT, versionInfo);
-
+            StringBuilder esGetURL = new StringBuilder(url).append(encodedJson).append(UID);
+            Settings currentSettings = new Settings();
+            HttpGet getRequest;
+            if (!currentSettings.getOptOutCheckBoxValue()) {
+                esGetURL =
+                        new StringBuilder(esGetURL).append(windowObjects.getBeagleId());
+                String versionInfo = windowObjects.getOsInfo() + "  "
+                        + windowObjects.getApplicationVersion() + "  "
+                        + windowObjects.getPluginVersion();
+                getRequest = new HttpGet(esGetURL.toString());
+                getRequest.setHeader(USER_AGENT, versionInfo);
+            } else {
+                esGetURL = new StringBuilder(esGetURL).append(OPTED_OUT);
+                getRequest = new HttpGet(esGetURL.toString());
+            }
             HttpResponse response = httpClient.execute(getRequest);
             if (response.getStatusLine().getStatusCode() != HTTP_OK_STATUS) {
                 throw new RuntimeException(FAILED_HTTP_ERROR

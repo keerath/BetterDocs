@@ -17,32 +17,54 @@
 
 package com.imaginea.kodebeagle.ui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("PMD")
 public class IdentityPanel {
 
     private static final String TITLE1 = "Identity";
     private static final String BEAGLE_ID = "Beagle ID:";
-    private static final int[] IDENTITY_PANEL_COLUMN_WIDTHS = new int[] {0, 0, 0, 0, 99, 0};
-    private static final int[] IDENTITY_PANEL_ROW_HEIGHTS = new int[] {0, 0, 0, 0};
+    private static final String OPT_OUT = "Opt-Out";
+    private static final String HELP_TEXT_1 = "* Beagle ID is used to anonymously track"
+            + " search queries for improving your search experience.";
+    private static final String HELP_TEXT_2 = "* By selecting Opt-Out mode we DON'T"
+            + " track your search queries.";
+    private static final String HELP_TEXT_3 = " (For further details refer our Privacy Policy)";
+    private static final String HELP_FONT_NAME = "Sans Serif";
+    private static final int HELP_FONT_SIZE = 12;
+    private static final int[] IDENTITY_PANEL_COLUMN_WIDTHS =
+            new int[] {29, 87, 126, 0, 0, 104, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    private static final int[] IDENTITY_PANEL_ROW_HEIGHTS =
+            new int[] {0, 0, 0, 0, 0, 0, 0};
 
     private static final double[] IDENTITY_PANEL_COLUMN_WEIGHTS =
-            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
     private static final double[] IDENTITY_PANEL_ROW_WEIGHTS =
-            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
     private JLabel beagleId;
     private JLabel beagleIdValue;
-    private JPanel spacer = new JPanel(null);
+    private JLabel beagleIdHelp;
+    private JLabel optOutHelp;
+    private JLabel privacyHelp;
+    private JCheckBox optOut;
+    private final JPanel spacer = new JPanel(null);
 
-    private final GridBagConstraints identityPanelVerticalSpacer =
-            new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+    private final GridBagConstraints identityPanelVerticalSpacer1 =
+            new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+                    GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0);
+
+    private final GridBagConstraints identityPanelVerticalSpacer2 =
+            new GridBagConstraints(1, 2, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0);
 
     private final GridBagConstraints identityPanelHorizontalSpacer1 =
@@ -57,9 +79,26 @@ public class IdentityPanel {
             new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0);
 
+    private final GridBagConstraints identityPanelFirstCenter =
+            new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+                    GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0);
+
     private final GridBagConstraints identityPanelFirstRight =
-            new GridBagConstraints(4, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+            new GridBagConstraints(5, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0);
+
+    private final GridBagConstraints identityPanelSecondLeft =
+            new GridBagConstraints(1, 3, 12, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 5, 0), 0, 0);
+
+    private final GridBagConstraints identityPanelThirdLeft =
+            new GridBagConstraints(1, 4, 10, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+                    GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0);
+
+    private final GridBagConstraints identityPanelFourthLeft =
+            new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+                    GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0);
 
     protected IdentityPanel() {
         createFields();
@@ -69,9 +108,20 @@ public class IdentityPanel {
         return beagleIdValue;
     }
 
+    public final JCheckBox getOptOut() {
+        return optOut;
+    }
+
     private void createFields() {
         beagleId = new JLabel(BEAGLE_ID);
         beagleIdValue = new JLabel();
+        optOut = new JCheckBox(OPT_OUT);
+        beagleIdHelp = new JLabel(HELP_TEXT_1);
+        beagleIdHelp.setFont(new Font(HELP_FONT_NAME, Font.ITALIC, HELP_FONT_SIZE));
+        optOutHelp = new JLabel(HELP_TEXT_2);
+        optOutHelp.setFont(new Font(HELP_FONT_NAME, Font.ITALIC, HELP_FONT_SIZE));
+        privacyHelp = new JLabel(HELP_TEXT_3);
+        privacyHelp.setFont(new Font(HELP_FONT_NAME, Font.ITALIC, HELP_FONT_SIZE));
     }
 
     public final JPanel getPanel() {
@@ -82,11 +132,16 @@ public class IdentityPanel {
         ((GridBagLayout) identityPanel.getLayout()).rowHeights = IDENTITY_PANEL_ROW_HEIGHTS;
         ((GridBagLayout) identityPanel.getLayout()).columnWeights = IDENTITY_PANEL_COLUMN_WEIGHTS;
         ((GridBagLayout) identityPanel.getLayout()).rowWeights = IDENTITY_PANEL_ROW_WEIGHTS;
-        identityPanel.add(spacer, identityPanelVerticalSpacer);
+        identityPanel.add(spacer, identityPanelVerticalSpacer1);
         identityPanel.add(spacer, identityPanelHorizontalSpacer1);
         identityPanel.add(beagleId, identityPanelFirstLeft);
         identityPanel.add(spacer, identityPanelHorizontalSpacer2);
-        identityPanel.add(beagleIdValue, identityPanelFirstRight);
+        identityPanel.add(beagleIdValue, identityPanelFirstCenter);
+        identityPanel.add(optOut, identityPanelFirstRight);
+        identityPanel.add(spacer, identityPanelVerticalSpacer2);
+        identityPanel.add(beagleIdHelp, identityPanelSecondLeft);
+        identityPanel.add(optOutHelp, identityPanelThirdLeft);
+        identityPanel.add(privacyHelp, identityPanelFourthLeft);
         return identityPanel;
     }
 }

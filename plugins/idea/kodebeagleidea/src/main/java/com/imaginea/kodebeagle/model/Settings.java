@@ -37,17 +37,21 @@ public class Settings {
     private boolean esOverrideCheckBoxValue;
     private List<ClassFilter> filterList;
     private boolean excludeImportsCheckBoxValue;
+    private boolean optOutCheckBoxValue;
+
 
 
     public Settings(final Limits pLimits, final EsURLComboBoxModel pEsURLComboBoxModel,
                     final boolean pEsOverrideCheckBoxValue,
                     final List<ClassFilter> pFilterList,
-                    final boolean pExcludeImportsCheckBoxValue) {
+                    final boolean pExcludeImportsCheckBoxValue,
+                    final boolean pOptOutCheckBoxValue) {
         this.limits = pLimits;
         this.esURLComboBoxModel = pEsURLComboBoxModel;
         this.esOverrideCheckBoxValue = pEsOverrideCheckBoxValue;
         this.filterList = pFilterList;
         this.excludeImportsCheckBoxValue = pExcludeImportsCheckBoxValue;
+        this.optOutCheckBoxValue = pOptOutCheckBoxValue;
     }
 
     public final Limits getLimits() {
@@ -64,6 +68,14 @@ public class Settings {
 
     public final void setEsURLComboBoxModel(final EsURLComboBoxModel pEsURLComboBoxModel) {
         this.esURLComboBoxModel = pEsURLComboBoxModel;
+    }
+
+    public final boolean getOptOutCheckBoxValue() {
+        return optOutCheckBoxValue;
+    }
+
+    public final void setOptOutCheckBoxValue(final boolean pOptOutCheckBoxValue) {
+        this.optOutCheckBoxValue = pOptOutCheckBoxValue;
     }
 
     public static class Limits {
@@ -321,30 +333,30 @@ public class Settings {
         myEsURLComboBoxModel.save();
         propertiesComponent.setValue(RefreshAction.ES_URL_CHECKBOX_VALUE,
                 String.valueOf(esOverrideCheckBoxValue));
-
         propertiesComponent.setValues(RefreshAction.EXCLUDE_IMPORT_PATTERN,
                 getImportPatterns(getFilterList()));
         propertiesComponent.setValues(RefreshAction.EXCLUDE_IMPORT_STATE,
                 getImportStates(getFilterList()));
         propertiesComponent.setValue(RefreshAction.EXCLUDE_IMPORT_CHECKBOX_VALUE,
                 String.valueOf(excludeImportsCheckBoxValue));
-
+        propertiesComponent.setValue(RefreshAction.OPT_OUT_CHECKBOX_VALUE,
+                String.valueOf(optOutCheckBoxValue));
     }
 
     private void setOldImportsAsPatternAndState(final String oldImports) {
         PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
         List<String> oldPatterns = new ArrayList<>();
         List<String> oldStates = new ArrayList<>();
-            if (oldImports != null) {
-                List<String> oldImportsList = Arrays.asList(oldImports.split(DELIMITER));
-                for (String oldImport : oldImportsList) {
-                    String trimmedImport = oldImport.trim();
-                    if (!trimmedImport.isEmpty()) {
-                        oldPatterns.add(trimmedImport);
-                        oldStates.add(TRUE);
-                    }
+        if (oldImports != null) {
+            List<String> oldImportsList = Arrays.asList(oldImports.split(DELIMITER));
+            for (String oldImport : oldImportsList) {
+                String trimmedImport = oldImport.trim();
+                if (!trimmedImport.isEmpty()) {
+                    oldPatterns.add(trimmedImport);
+                    oldStates.add(TRUE);
                 }
             }
+        }
         propertiesComponent.setValues(RefreshAction.EXCLUDE_IMPORT_PATTERN,
                 oldPatterns.toArray(new String[oldPatterns.size()]));
         propertiesComponent.setValues(RefreshAction.EXCLUDE_IMPORT_STATE,
@@ -390,6 +402,10 @@ public class Settings {
         this.setExcludeImportsCheckBoxValue(Boolean.parseBoolean(propertiesComponent.getValue(
                 RefreshAction.EXCLUDE_IMPORT_CHECKBOX_VALUE,
                 RefreshAction.EXCLUDE_IMPORT_DEFAULT_CHECKBOX_VALUE)));
+
+        this.setOptOutCheckBoxValue(Boolean.parseBoolean(propertiesComponent.getValue(
+                RefreshAction.OPT_OUT_CHECKBOX_VALUE,
+                RefreshAction.OPT_OUT_DEFAULT_CHECKBOX_VALUE)));
     }
 
     @Override
@@ -408,7 +424,8 @@ public class Settings {
                 settings.getFilterList().toArray(
                         new ClassFilter[settings.getFilterList().size()]))
                 && getEsOverrideCheckBoxValue() == settings.getEsOverrideCheckBoxValue()
-                && this.getEsURLComboBoxModel().equals(settings.getEsURLComboBoxModel());
+                && this.getEsURLComboBoxModel().equals(settings.getEsURLComboBoxModel())
+                && this.getOptOutCheckBoxValue() == settings.getOptOutCheckBoxValue();
     }
 
     @Override
@@ -425,6 +442,7 @@ public class Settings {
         }
         hashCode = String.valueOf(esOverrideCheckBoxValue).hashCode() + hashCode;
         hashCode = String.valueOf(excludeImportsCheckBoxValue).hashCode() + hashCode;
+        hashCode = String.valueOf(optOutCheckBoxValue).hashCode() + hashCode;
         return hashCode;
     }
 }

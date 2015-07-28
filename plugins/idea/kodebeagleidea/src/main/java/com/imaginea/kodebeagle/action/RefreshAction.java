@@ -135,6 +135,8 @@ public class RefreshAction extends AnAction {
     private static final double CONVERT_TO_SECONDS = 1000000000.0;
     private static final String RESULT_NOTIFICATION_FORMAT =
             "<br/> Showing %d of %d results (%.2f seconds)";
+    public static final String OPT_OUT_CHECKBOX_VALUE = "Opt out checkbox value";
+    public static final String OPT_OUT_DEFAULT_CHECKBOX_VALUE = "false";
     private static final int HGAP = 20;
     private static final int VGAP = 5;
     private final WrapLayout wrapLayout = new WrapLayout(FlowLayout.CENTER, HGAP, VGAP);

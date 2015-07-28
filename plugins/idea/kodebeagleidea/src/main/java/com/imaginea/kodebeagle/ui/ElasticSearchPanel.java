@@ -36,34 +36,30 @@ public class ElasticSearchPanel {
     private static final String OVERRIDE = "Override";
 
     private static final int[] ELASTIC_SEARCH_PANEL_COLUMN_WIDTHS =
-            new int[] {0, 0, 0, 0, 0, 0, 285, 95, 0};
+            new int[] {29, 84, 63, 285, 0, 95, 0};
 
     private static final int[] ELASTIC_SEARCH_PANEL_ROW_HEIGHTS = new int[] {0, 0, 0};
 
     private static final double[] ELASTIC_SEARCH_PANEL_COLUMN_WEIGHTS =
-            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
     private static final double[] ELASTIC_SEARCH_PANEL_ROW_WEIGHTS =
             new double[] {0.0, 0.0, 1.0E-4};
 
     private final GridBagConstraints elasticSearchPanelVerticalSpacer1 =
-            new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+            new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0);
 
     private final GridBagConstraints elasticSearchPanelFirstLeft =
-            new GridBagConstraints(0, 1, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER,
-                    GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0);
-
-    private final GridBagConstraints elasticSearchPanelHorizontalSpacer1 =
-            new GridBagConstraints(5, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
-                    GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0);
+            new GridBagConstraints(1, 1, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+                    GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 
     private final GridBagConstraints elasticSearchPanelFirstCenter =
-            new GridBagConstraints(6, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+            new GridBagConstraints(3, 1, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0);
 
     private final GridBagConstraints elasticSearchPanelFirstRight =
-            new GridBagConstraints(7, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+            new GridBagConstraints(5, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 
     private final JPanel spacer = new JPanel(null);
@@ -117,7 +113,6 @@ public class ElasticSearchPanel {
                 ELASTIC_SEARCH_PANEL_ROW_WEIGHTS;
         elasticSearchPanel.add(spacer, elasticSearchPanelVerticalSpacer1);
         elasticSearchPanel.add(new JLabel(ELASTIC_SEARCH_URL), elasticSearchPanelFirstLeft);
-        elasticSearchPanel.add(spacer, elasticSearchPanelHorizontalSpacer1);
         elasticSearchPanel.add(esURLComboBox, elasticSearchPanelFirstCenter);
         elasticSearchPanel.add(esURLOverrideCheckBox, elasticSearchPanelFirstRight);
         return elasticSearchPanel;

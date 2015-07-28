@@ -51,13 +51,13 @@ public class LimitsPanel {
     public static final int TOP_COUNT_MAX = 20;
 
     private static final int[] LIMITS_PANEL_COLUMN_WIDTHS =
-            new int[] {0, 0, 0, 0, 0, 37, 25, 41, 0, 0, 0, 0, 0};
+            new int[] {29, 0, 0, 0, 0, 0, 37, 25, 41, 0, 0, 0, 0, 0};
 
     private static final int[] LIMITS_PANEL_ROW_HEIGHTS =
             new int[] {0, 0, 0, 0, 0, 0, 0, 0};
 
     private static final double[] LIMITS_PANEL_COLUMN_WEIGHTS =
-            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
     private static final double[] LIMITS_PANEL_ROW_WEIGHTS =
             new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};

@@ -268,3 +268,13 @@ persisted. Thus a user can see the history of all his applied URLs.<br>
 ##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/299'> #299 </a>
 1. New settings panel will load values persisted by old settings panel by comparing it with their limits. If the value
 lies in the limit then it will be loaded or else default values will be loaded.
+
+#### 40. [idea] #297 Opt-Out Mode added
+##### fixes <a href='https://github.com/Imaginea/KodeBeagle/issues/297'> #297 </a>
+1. In settings panel, a user can select the "Opt-Out" checkbox to enter into the Opt-Out Mode. In this mode the Beagle ID<br>
+is not sent with each request and also in the settings panel its value is set to "Not Available" when settings are applied.<br>
+Before Opt-Out mode<br>
+<img src = 'screenshots/before-opt-out.png'><br>
+After Opt-Out mode <br>
+<img src = 'screenshots/after-opt-out.png'>
+lies in the limit then it will be loaded or else default values will be loaded.

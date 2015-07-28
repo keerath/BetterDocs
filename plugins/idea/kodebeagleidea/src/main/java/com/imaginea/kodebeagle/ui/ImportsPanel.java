@@ -33,7 +33,7 @@ public class ImportsPanel {
     private static final String EXCLUDE_IMPORTS = "Exclude the following imports:";
 
     private static final int[] IMPORTS_PANEL_COLUMN_WIDTHS =
-            new int[] {0, 48, 0, 91, 218, 53, 55, 17, 0, 0};
+            new int[] {29, 48, 0, 91, 218, 53, 55, 17, 24, 0};
 
     private static final int[] IMPORTS_PANEL_ROW_HEIGHTS =
             new int[] {0, 0, 40, 0, 31, 35, 36, 11, 0};

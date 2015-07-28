@@ -69,6 +69,10 @@ public class SettingsPanel {
         return identityPanel.getBeagleIdValue();
     }
 
+    public final JCheckBox getOptOutCheckBox() {
+        return identityPanel.getOptOut();
+    }
+
     public final JSlider getLinesFromCursorSlider() {
         return  limitsPanel.getLinesFromCursorSlider();
     }
@@ -96,6 +100,7 @@ public class SettingsPanel {
     public final JCheckBox getExcludeImportsCheckBox() {
         return importsPanel.getExcludeImportsCheckBox();
     }
+
 
     public final JComponent createPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();

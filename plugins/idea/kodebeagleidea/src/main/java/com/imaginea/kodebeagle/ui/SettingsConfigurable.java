@@ -42,6 +42,7 @@ public class SettingsConfigurable implements Configurable {
 
     protected static final String BEAGLE_ID = "Beagle ID:";
     public static final String KODE_BEAGLE_SETTINGS = "KodeBeagle Settings";
+    private static final String NA = "Not Available";
     private SettingsPanel settingsPanel = new SettingsPanel();
     private JLabel beagleIdValue;
     private JSpinner resultSizeSpinner;
@@ -51,10 +52,12 @@ public class SettingsConfigurable implements Configurable {
     private PatternFilterEditor importsPatternFilter;
     private JCheckBox esURLOverrideCheckBox;
     private JCheckBox excludeImportsCheckBox;
+    private JCheckBox optOutCheckBox;
     private WindowObjects windowObjects = WindowObjects.getWindowObjects();
 
     private void getFields() {
         beagleIdValue = settingsPanel.getBeagleIdValue();
+        optOutCheckBox = settingsPanel.getOptOutCheckBox();
         resultSizeSpinner = settingsPanel.getResultSizeSpinner();
         linesFromCursorSlider = settingsPanel.getLinesFromCursorSlider();
         esURLComboBox = settingsPanel.getEsURLComboBox();
@@ -96,6 +99,7 @@ public class SettingsConfigurable implements Configurable {
             newSettings.getEsURLComboBoxModel().setEsURLS(
                     currentEsURLs.toArray(new String[currentEsURLs.size()]));
         }
+        loadBeagleId(newSettings.getOptOutCheckBoxValue());
         newSettings.save();
     }
 
@@ -109,22 +113,33 @@ public class SettingsConfigurable implements Configurable {
         int topCountValue = (int) topCountSpinner.getValue();
         List<ClassFilter> filtersList = Arrays.asList(importsPatternFilter.getFilters());
         Boolean excludeImportsCheckBoxValue = excludeImportsCheckBox.isSelected();
-
+        Boolean optOutCheckBoxValue = optOutCheckBox.isSelected();
         return new Settings(new Settings.Limits(linesFromCursorValue, sizeValue, topCountValue),
                 new Settings.EsURLComboBoxModel(esURLValue), esOverrideCheckBoxValue,
-                filtersList, excludeImportsCheckBoxValue);
+                filtersList, excludeImportsCheckBoxValue, optOutCheckBoxValue);
+    }
+
+
+    private void loadBeagleId(final boolean optOutCheckBoxValue) {
+        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
+        if (!optOutCheckBoxValue) {
+            if (!propertiesComponent.isValueSet(BEAGLE_ID)) {
+                windowObjects.setBeagleId(UUID.randomUUID().toString());
+                beagleIdValue.setText(windowObjects.getBeagleId());
+            } else {
+                beagleIdValue.setText(propertiesComponent.getValue(BEAGLE_ID));
+            }
+        } else {
+            beagleIdValue.setText(NA);
+        }
     }
 
     @Override
     public final void reset() {
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-        if (!propertiesComponent.isValueSet(BEAGLE_ID)) {
-            windowObjects.setBeagleId(UUID.randomUUID().toString());
-            beagleIdValue.setText(windowObjects.getBeagleId());
-        } else {
-            beagleIdValue.setText(propertiesComponent.getValue(BEAGLE_ID));
-        }
         Settings mySettings = new Settings();
+        loadBeagleId(mySettings.getOptOutCheckBoxValue());
+        optOutCheckBox.setSelected(mySettings.getOptOutCheckBoxValue());
+
         linesFromCursorSlider.setValue(mySettings.getLimits().getLinesFromCursor());
         resultSizeSpinner.setValue(mySettings.getLimits().getResultSize());
         topCountSpinner.setValue(mySettings.getLimits().getTopCount());
