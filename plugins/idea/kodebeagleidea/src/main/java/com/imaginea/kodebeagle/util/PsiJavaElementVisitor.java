@@ -17,88 +17,146 @@
 
 package com.imaginea.kodebeagle.util;
 
-import com.intellij.psi.JavaRecursiveElementVisitor;;
+import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNewExpression;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.impl.source.tree.JavaElementType;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.siyeh.ig.psiutils.ClassUtils;
+
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
+    private Set<String> importsSet;
+    private int startOffset;
+    private int endOffset;
 
-    Set<String> importsSet;
-    public PsiJavaElementVisitor() {
+    public final Set<String> getImportsSet() {
+        return importsSet;
+    }
+
+    public PsiJavaElementVisitor(final int start, final int end) {
         super();
         importsSet = new HashSet<>();
+        startOffset = start;
+        endOffset = end;
     }
 
     @Override
-    public void visitElement(PsiElement element) {
+    public final void visitElement(final PsiElement element) {
         super.visitElement(element);
-        if (element.getNode().getElementType().equals(JavaElementType.FIELD)) {
-            visitField((PsiField) element);
-        } else if (element.getNode().getElementType().equals(JavaElementType.NEW_EXPRESSION)) {
-            visitNewExpression((PsiNewExpression) element);
-        } else if (element.getNode().getElementType().equals(JavaElementType.METHOD_CALL_EXPRESSION)) {
-           visitMethodCallExpression((PsiMethodCallExpression) element);
-        } else if (element.getNode().getElementType().equals(JavaElementType.ASSIGNMENT_EXPRESSION)) {
-            visitAssignmentExpression((PsiAssignmentExpression) element);
-        } else if (element.getNode().getElementType().equals(JavaElementType.DECLARATION_STATEMENT)) {
-            visitDeclarationStatement((PsiDeclarationStatement) element);
-        }
-    }
-
-    @Override
-    public void visitField(final PsiField field) {
-
-    }
-
-    @Override
-    public void visitNewExpression(final PsiNewExpression newExpression) {
-        PsiExpression qualifier = newExpression.getQualifier();
-        if (qualifier != null) {
-           PsiType qualifierType = qualifier.getType();
-            if (qualifierType != null) {
-               importsSet.add(qualifierType.getCanonicalText());
+        if (startOffset <= element.getTextOffset() && element.getTextOffset() <= endOffset) {
+            if (element.getNode().getElementType().equals(JavaElementType.FIELD)) {
+                visitPsiFields((PsiField) element);
+            } else if (element.getNode().getElementType().equals(JavaElementType.NEW_EXPRESSION)) {
+                visitPsiNewExpression((PsiNewExpression) element);
+            } else if (element.getNode().getElementType().
+                    equals(JavaElementType.METHOD_CALL_EXPRESSION)) {
+                visitPsiMethodCallExpression((PsiMethodCallExpression) element);
+            } else if (element.getNode().getElementType().
+                    equals(JavaElementType.ASSIGNMENT_EXPRESSION)) {
+                visitPsiAssignmentExpression((PsiAssignmentExpression) element);
+            } else if (element.getNode().getElementType().
+                    equals(JavaElementType.DECLARATION_STATEMENT)) {
+                visitPsiDeclarationStatement((PsiDeclarationStatement) element);
             }
         }
     }
 
-    @Override
-    public void visitMethodCallExpression(final PsiMethodCallExpression methodCallExpression) {
-
-    }
-
-    @Override
-    public void visitAssignmentExpression(final PsiAssignmentExpression assignmentExpression) {
+    public final void visitPsiAssignmentExpression(final PsiAssignmentExpression
+                                                           assignmentExpression) {
         PsiType lExpressionType = assignmentExpression.getLExpression().getType();
-        if (lExpressionType != null) {
-            importsSet.add(lExpressionType.getCanonicalText());
+        if (lExpressionType != null && !ClassUtils.isPrimitive(lExpressionType)) {
+            String type = removeSpecialSymbols(lExpressionType.getCanonicalText());
+            importsSet.add(type);
         }
         PsiExpression rExpression = assignmentExpression.getRExpression();
         if (rExpression != null) {
             PsiType rExpressionType = rExpression.getType();
-            if (rExpressionType != null) {
-                importsSet.add(rExpressionType.getCanonicalText());
+            if (rExpressionType != null && !ClassUtils.isPrimitive(rExpressionType)) {
+                String type = removeSpecialSymbols(rExpressionType.getCanonicalText());
+                importsSet.add(type);
             }
         }
     }
 
-    @Override
-    public void visitDeclarationStatement(final PsiDeclarationStatement declarationStatement) {
-        for (PsiElement element : declarationStatement.getDeclaredElements()) {
-            if (element != null) {
-                if (element.getNode().getElementType().equals(JavaElementType.JAVA_CODE_REFERENCE)) {
-                    importsSet.add(((PsiJavaCodeReferenceElement) element).getQualifiedName());
+    public final void visitPsiDeclarationStatement(final PsiDeclarationStatement
+                                                           declarationStatement) {
+         Collection<PsiTypeElement> typeElements =
+                 PsiTreeUtil.findChildrenOfType(declarationStatement, PsiTypeElement.class);
+        for (PsiTypeElement element : typeElements) {
+            String type = removeSpecialSymbols(element.getType().getCanonicalText());
+            importsSet.add(type);
+        }
+    }
+
+    public final void visitPsiNewExpression(final PsiNewExpression element) {
+        if (element.getType() != null) {
+            PsiType psiType = element.getType();
+            if (psiType != null && !ClassUtils.isPrimitive(psiType)) {
+                String type = removeSpecialSymbols(psiType.getCanonicalText());
+                importsSet.add(type);
+            }
+        }
+    }
+
+    public final void visitPsiFields(final PsiField psiField) {
+        if (!ClassUtils.isPrimitive(psiField.getType())) {
+            String type = removeSpecialSymbols(psiField.getType().getCanonicalText());
+            if (psiField.getInitializer() != null) {
+                PsiExpression psiExpression = psiField.getInitializer();
+                if (psiExpression != null) {
+                    PsiType psiType = psiExpression.getType();
+                    if (psiType != null && !ClassUtils.isPrimitive(psiType)) {
+                        String psiFieldInitializer =
+                                removeSpecialSymbols(psiType.getCanonicalText());
+                        importsSet.add(psiFieldInitializer);
+                    }
+                }
+            }
+            importsSet.add(type);
+        }
+    }
+
+    public final void visitPsiMethodCallExpression(final PsiMethodCallExpression element) {
+        PsiReferenceExpression methodExpr = element.getMethodExpression();
+        if (methodExpr.getQualifierExpression() != null) {
+            PsiExpression psiExpression = methodExpr.getQualifierExpression();
+            if (psiExpression != null) {
+                PsiType psiType = psiExpression.getType();
+                if (psiType != null && !ClassUtils.isPrimitive(psiExpression.getType())) {
+                    String type = removeSpecialSymbols(psiType.getCanonicalText());
+                    importsSet.add(type);
+                } else if (psiExpression.getReference() != null
+                        && !ClassUtils.isPrimitive(psiExpression.getType())) {
+                    PsiReference psiReference = psiExpression.getReference();
+                    if (psiReference != null) {
+                        String type = removeSpecialSymbols(psiReference.getCanonicalText());
+                        importsSet.add(type);
+                    }
                 }
             }
         }
+    }
+
+    private String removeSpecialSymbols(final String pType) {
+        String type = pType;
+        if (type != null && type.contains("<")) {
+            type = type.substring(0, type.indexOf("<"));
+        } else if (type != null && type.contains("[")) {
+            type = type.substring(0, type.indexOf("["));
+        }
+        return type;
     }
 }

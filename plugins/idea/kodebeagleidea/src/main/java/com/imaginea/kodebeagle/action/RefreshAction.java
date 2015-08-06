@@ -183,19 +183,11 @@ public class RefreshAction extends AnAction {
             windowObjects.getCodePaneTinyEditorsJPanel().removeAll();
 
             if (editorDocOps.isJavaFile(projectEditor.getDocument())) {
-                Set<String> allImports = getAllImportsAfterExcludes(projectEditor.getDocument());
+                editorDocOps.setLineOffSets(projectEditor, windowObjects.getDistance());
+                Set<String> allImports = getAllImportsAfterExcludes(projectEditor);
                 if (!allImports.isEmpty()) {
-                    Set<String> importsInLines = getImportsInLines(projectEditor, allImports);
-                    if (!importsInLines.isEmpty()) {
-                        ProgressManager.getInstance().run(new QueryBDServerTask(importsInLines,
-                                allImports, jTree, model, root));
-                    } else {
-                        if (projectEditor.getSelectionModel().hasSelection()) {
-                            showHelpInfo(HELP_MESSAGE_IF_CODE_SELECTED);
-                        } else {
-                            showHelpInfo(HELP_MESSAGE_NO_SELECTED_CODE);
-                        }
-                    }
+                    ProgressManager.getInstance().run(new QueryBDServerTask(allImports,
+                            jTree, model, root));
                 } else {
                     if (projectEditor.getSelectionModel().hasSelection()) {
                         showHelpInfo(HELP_MESSAGE_IF_CODE_SELECTED);
@@ -219,11 +211,10 @@ public class RefreshAction extends AnAction {
         buildCodePane(codePaneTinyEditors);
     }
 
-    private Map<String, ArrayList<CodeInfo>> doBackEndWork(final Set<String> importsInLines,
-                                                           final Set<String> finalImports,
+    private Map<String, ArrayList<CodeInfo>> doBackEndWork(final Set<String> finalImports,
                                                            final ProgressIndicator indicator) {
         indicator.setText(FETCHING_PROJECTS);
-        String esResultJson = getESQueryResultJson(importsInLines);
+        String esResultJson = getESQueryResultJson(finalImports);
         Map<String, ArrayList<CodeInfo>> projectNodes = new HashMap<String, ArrayList<CodeInfo>>();
         if (!esResultJson.equals(EMPTY_ES_URL)) {
             projectNodes = getProjectNodes(finalImports, esResultJson);
@@ -409,8 +400,8 @@ public class RefreshAction extends AnAction {
         return projectNodes;
     }
 
-    private Set<String> getAllImportsAfterExcludes(final Document document) {
-        Set<String> imports = editorDocOps.getImports(document);
+    private Set<String> getAllImportsAfterExcludes(final Editor projectEditor) {
+        Set<String> imports = editorDocOps.getImportInLines(projectEditor);
         if (!imports.isEmpty()) {
             if (currentSettings.getExcludeImportsCheckBoxValue()) {
                 List<ClassFilter> importFilters =
@@ -427,18 +418,9 @@ public class RefreshAction extends AnAction {
             }
             Set<String> finalImports =
                     editorDocOps.excludeInternalImports(imports);
-
             return finalImports;
         }
-
         return imports;
-    }
-
-    private Set<String> getImportsInLines(final Editor projectEditor,
-                                          final Set<String> externalImports) {
-        Set<String> lines = editorDocOps.getLines(projectEditor, windowObjects.getDistance());
-        Set<String> importsInLines = editorDocOps.importsInLines(lines, externalImports);
-        return importsInLines;
     }
 
     public final void init() throws IOException {
@@ -523,7 +505,6 @@ public class RefreshAction extends AnAction {
 
     private class QueryBDServerTask extends Task.Backgroundable {
         public static final int MIN_IMPORT_SIZE = 3;
-        private final Set<String> importsInLines;
         private final Set<String> finalImports;
         private final JTree jTree;
         private final DefaultTreeModel model;
@@ -533,12 +514,11 @@ public class RefreshAction extends AnAction {
         private volatile boolean isFailed;
         private String httpErrorMsg;
 
-        QueryBDServerTask(final Set<String> pImportsInLines, final Set<String> pFinalImports,
+        QueryBDServerTask(final Set<String> pFinalImports,
                           final JTree pJTree, final DefaultTreeModel pModel,
                           final DefaultMutableTreeNode pRoot) {
             super(windowObjects.getProject(), KODEBEAGLE, true,
                     PerformInBackgroundOption.ALWAYS_BACKGROUND);
-            this.importsInLines = pImportsInLines;
             this.finalImports = pFinalImports;
             this.jTree = pJTree;
             this.model = pModel;
@@ -549,7 +529,7 @@ public class RefreshAction extends AnAction {
         public void run(@NotNull final ProgressIndicator indicator) {
             try {
                 long startTime = System.nanoTime();
-                projectNodes = doBackEndWork(importsInLines, finalImports, indicator);
+                projectNodes = doBackEndWork(finalImports, indicator);
                 long endTime = System.nanoTime();
                 double timeToFetchResults = (endTime - startTime) / CONVERT_TO_SECONDS;
                 if (windowObjects.getNotification() != null) {
@@ -575,7 +555,7 @@ public class RefreshAction extends AnAction {
         private String getResultNotificationMessage(final int resultCount, final long totalCount,
                                                     final double timeToFetchResults) {
             String resultNotification =
-                    importsInLines.toString() + String.format(RESULT_NOTIFICATION_FORMAT,
+                    finalImports.toString() + String.format(RESULT_NOTIFICATION_FORMAT,
                             resultCount, totalCount, timeToFetchResults);
             return resultNotification;
         }
@@ -593,8 +573,8 @@ public class RefreshAction extends AnAction {
                     }
                 } else {
                     String helpMsg = String.format(QUERY_HELP_MESSAGE,
-                            importsInLines.toString().replaceAll(",", "<br/>"));
-                    if (importsInLines.size() > MIN_IMPORT_SIZE) {
+                            finalImports.toString().replaceAll(",", "<br/>"));
+                    if (finalImports.size() > MIN_IMPORT_SIZE) {
                         helpMsg = helpMsg + PRO_TIP;
                     }
                     showHelpInfo(helpMsg);

@@ -40,30 +40,6 @@ class ExtractImportSuite extends FunSuite with BeforeAndAfterAll {
    * We need to explore this thing to get the Project object
    * TODO : Explore mocking
    */
-  ignore("Extracted imports should match the imports in java file.") {
-    val editorDocOps = new EditorDocOps().getImports(document)
-    val expected = Set(
-      "java.io.Closeable",
-      "java.io.IOException",
-      "java.util.UUID",
-      "java.util.concurrent.ExecutionException",
-      "java.util.concurrent.TimeUnit",
-      "com.google.common.base.Objects",
-      "com.google.common.base.Preconditions",
-      "com.google.common.base.Throwables",
-      "com.google.common.util.concurrent.SettableFuture",
-      "io.netty.channel.Channel",
-      "io.netty.channel.ChannelFuture",
-      "io.netty.channel.ChannelFutureListener",
-      "org.slf4j.Logger",
-      "org.slf4j.LoggerFactory",
-      "org.apache.spark.network.protocol.ChunkFetchRequest",
-      "org.apache.spark.network.protocol.RpcRequest",
-      "org.apache.spark.network.protocol.StreamChunkId",
-      "org.apache.spark.network.util.NettyUtils"
-    )
-    assert(editorDocOps.toSet === expected)
-  }
 
   test("Excluded imports set should accept regex and FQCN.") {
     val imports = Set(

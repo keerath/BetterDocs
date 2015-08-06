@@ -36,9 +36,13 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.roots.PackageIndex;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import java.awt.Color;
@@ -58,15 +62,16 @@ import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.NotNull;
 
 public class EditorDocOps {
+    private static final String IMPLICIT_IMPORT = "java.lang";
+    private static final String JAVA_IO_TMP_DIR = "java.io.tmpdir";
+    private static final String FILE_EXTENSION = "java";
     private WindowObjects windowObjects = WindowObjects.getInstance();
     private WindowEditorOps windowEditorOps = new WindowEditorOps();
-    private static final String JAVA_IO_TMP_DIR = "java.io.tmpdir";
     private static final Color HIGHLIGHTING_COLOR =
             new JBColor(new Color(255, 250, 205), Gray._100);
     public static final char DOT = '.';
-    private static final String FILE_EXTENSION = "java";
-    private int startOffset;
-    private int endOffset;
+    private int start;
+    private int end;
 
     public final void setLineOffSets(final Editor projectEditor, final int distance) {
         Document document = projectEditor.getDocument();
@@ -93,8 +98,43 @@ public class EditorDocOps {
                 tail = currentLine + distance;
             }
         }
-        startOffset= document.getLineStartOffset(head);
-        endOffset= document.getLineEndOffset(tail);
+        start = document.getLineStartOffset(head);
+        end = document.getLineEndOffset(tail);
+    }
+
+    public final Set<String> getImportInLines(final Editor projectEditor) {
+        PsiDocumentManager psiInstance =
+                PsiDocumentManager.getInstance(windowObjects.getProject());
+        PsiJavaFile psiJavaFile =
+                (PsiJavaFile) psiInstance.getPsiFile(projectEditor.getDocument());
+        PsiJavaElementVisitor psiJavaElementVisitor =
+                new PsiJavaElementVisitor(start, end);
+        if (psiJavaFile != null && psiJavaFile.findElementAt(start) != null) {
+            PsiElement psiElement = psiJavaFile.findElementAt(start);
+            final PsiElement psiMethod =  PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
+            if (psiMethod != null) {
+                psiMethod.accept(psiJavaElementVisitor);
+            } else {
+                final PsiClass psiClass = PsiTreeUtil.getParentOfType(psiElement, PsiClass.class);
+                if (psiClass != null) {
+                    psiClass.accept(psiJavaElementVisitor);
+                }
+            }
+        }
+        Set<String> importsInLines = psiJavaElementVisitor.getImportsSet();
+        importsInLines = removeImplicitImports(importsInLines);
+        return importsInLines;
+    }
+
+    private Set<String> removeImplicitImports(final Set<String> importsInLines) {
+        Set<String> excludeImplicitImports = new HashSet<String>();
+        for (String importValue : importsInLines) {
+            if (importValue != null && importValue.startsWith(IMPLICIT_IMPORT)) {
+                excludeImplicitImports.add(importValue);
+            }
+        }
+        importsInLines.removeAll(excludeImplicitImports);
+        return importsInLines;
     }
 
     public final Set<String> excludeInternalImports(@NotNull final Set<String> imports) {
