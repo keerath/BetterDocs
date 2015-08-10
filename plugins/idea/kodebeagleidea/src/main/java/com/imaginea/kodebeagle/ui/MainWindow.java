@@ -21,9 +21,9 @@ import com.imaginea.kodebeagle.action.CollapseProjectTreeAction;
 import com.imaginea.kodebeagle.action.EditSettingsAction;
 import com.imaginea.kodebeagle.action.ExpandProjectTreeAction;
 import com.imaginea.kodebeagle.action.RefreshAction;
+import com.imaginea.kodebeagle.model.Identity;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import com.imaginea.kodebeagle.settings.ui.LegalNotice;
-import com.imaginea.kodebeagle.settings.ui.SettingsConfigurable;
 import com.imaginea.kodebeagle.util.WindowEditorOps;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
@@ -84,12 +84,12 @@ public class MainWindow implements ToolWindowFactory {
         jTree.setRootVisible(false);
         jTree.setAutoscrolls(true);
 
-        if (!propertiesComponent.isValueSet(SettingsConfigurable.BEAGLE_ID)) {
+        if (!propertiesComponent.isValueSet(Identity.BEAGLE_ID)) {
             windowObjects.setBeagleId(UUID.randomUUID().toString());
-            propertiesComponent.setValue(SettingsConfigurable.BEAGLE_ID,
+            propertiesComponent.setValue(Identity.BEAGLE_ID,
                     windowObjects.getBeagleId());
         } else {
-            windowObjects.setBeagleId(propertiesComponent.getValue(SettingsConfigurable.BEAGLE_ID));
+            windowObjects.setBeagleId(propertiesComponent.getValue(Identity.BEAGLE_ID));
         }
 
         Document document = EditorFactory.getInstance().createDocument("");
@@ -125,7 +125,6 @@ public class MainWindow implements ToolWindowFactory {
         final JBScrollPane editorScrollPane = new JBScrollPane();
         editorScrollPane.getViewport().setBackground(JBColor.white);
         editorScrollPane.setViewportView(editorPanel);
-        editorScrollPane.setAutoscrolls(true);
         editorScrollPane.setPreferredSize(new Dimension(EDITOR_SCROLL_PANE_WIDTH,
                 EDITOR_SCROLL_PANE_HEIGHT));
         editorScrollPane.getVerticalScrollBar().setUnitIncrement(UNIT_INCREMENT);

@@ -17,17 +17,22 @@
 
 package com.imaginea.kodebeagle.settings.ui;
 
+import com.imaginea.kodebeagle.model.Imports;
 import com.imaginea.kodebeagle.object.WindowObjects;
+import com.intellij.ui.classFilter.ClassFilter;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 public class ImportsPanel {
+
 
     private static final String TITLE3 = "Configure Imports";
     private static final String EXCLUDE_IMPORTS = "Exclude the following imports:";
@@ -112,5 +117,23 @@ public class ImportsPanel {
         importsPanel.add(importsPatternFilter, importsPanelSecondLeft);
         importsPanel.add(spacer, importsPanelHorizontalSpacer1);
         return importsPanel;
+    }
+
+    public final void reset(final Imports imports) {
+        excludeImportsCheckBox.setSelected(
+                imports.getExcludeImportsCheckBoxValue());
+        List<ClassFilter> filtersList = imports.getFilterList();
+        importsPatternFilter.setFilters(filtersList.toArray(new ClassFilter[filtersList.size()]));
+        if (imports.getExcludeImportsCheckBoxValue()) {
+            importsPatternFilter.setEnabled(true);
+        } else {
+            importsPatternFilter.setEnabled(false);
+        }
+    }
+
+    public final Imports getImports() {
+        List<ClassFilter> filtersList = Arrays.asList(importsPatternFilter.getFilters());
+        boolean excludeImportsCheckBoxValue = excludeImportsCheckBox.isSelected();
+        return new Imports(filtersList, excludeImportsCheckBoxValue);
     }
 }

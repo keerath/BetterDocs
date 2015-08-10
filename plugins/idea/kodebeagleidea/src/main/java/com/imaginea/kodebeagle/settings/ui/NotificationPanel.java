@@ -17,6 +17,7 @@
 
 package com.imaginea.kodebeagle.settings.ui;
 
+import com.imaginea.kodebeagle.model.Notifications;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -90,5 +91,17 @@ public class NotificationPanel {
         notificationPanel.add(spacer, notificationPanelHorizontalSpacer1);
         notificationPanel.add(loggingCheckBox, notificationPanelFirstRight);
         return notificationPanel;
+    }
+
+    public final void reset(final Notifications notifications) {
+        notificationCheckBox.setSelected(
+                notifications.getNotificationsCheckBoxValue());
+        loggingCheckBox.setSelected(notifications.getLoggingCheckBoxValue());
+    }
+
+    public final Notifications getNotifications() {
+        boolean notificationCheckBoxValue = notificationCheckBox.isSelected();
+        boolean loggingCheckBoxValue = loggingCheckBox.isSelected();
+        return new Notifications(notificationCheckBoxValue, loggingCheckBoxValue);
     }
 }

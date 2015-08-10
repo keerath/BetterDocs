@@ -17,6 +17,7 @@
 
 package com.imaginea.kodebeagle.settings.ui;
 
+import com.imaginea.kodebeagle.model.Identity;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -29,7 +30,7 @@ import javax.swing.border.TitledBorder;
 @SuppressWarnings("PMD")
 public class IdentityPanel {
 
-    private static final String TITLE1 = "Identity";
+    private static final String TITLE1 = "SettingsConfigurable";
     private static final String BEAGLE_ID = "Beagle ID:";
     private static final String OPT_OUT = "Opt-Out";
     private static final String HELP_TEXT_1 = "* Beagle ID is used to anonymously track"
@@ -143,5 +144,16 @@ public class IdentityPanel {
         identityPanel.add(optOutHelp, identityPanelThirdLeft);
         identityPanel.add(privacyHelp, identityPanelFourthLeft);
         return identityPanel;
+    }
+
+    public final void reset(final Identity identity) {
+        identity.loadBeagleId();
+        beagleIdValue.setText(identity.getBeagleIdValue());
+        optOut.setSelected(identity.getOptOutCheckBoxValue());
+    }
+
+    public final Identity getIdentity() {
+        boolean optOutCheckBoxValue = optOut.isSelected();
+        return new Identity(optOutCheckBoxValue);
     }
 }

@@ -18,15 +18,18 @@
 package com.imaginea.kodebeagle.settings.ui;
 
 import com.imaginea.kodebeagle.action.RefreshAction;
+import com.imaginea.kodebeagle.model.ElasticSearch;
 import com.intellij.openapi.ui.ComboBox;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 public class ElasticSearchPanel {
@@ -117,4 +120,26 @@ public class ElasticSearchPanel {
         elasticSearchPanel.add(esURLOverrideCheckBox, elasticSearchPanelFirstRight);
         return elasticSearchPanel;
     }
+
+    public final void reset(final ElasticSearch elasticSearch) {
+        esURLComboBox.setModel(
+                new DefaultComboBoxModel(
+                        elasticSearch.getEsURLS()));
+        esURLOverrideCheckBox.setSelected(
+                elasticSearch.getEsOverrideCheckBoxValue());
+        if (elasticSearch.getEsOverrideCheckBoxValue()) {
+            esURLComboBox.setEnabled(true);
+            esURLComboBox.setSelectedItem(elasticSearch.getSelectedEsURL());
+        } else {
+            esURLComboBox.setEnabled(false);
+            esURLComboBox.setSelectedItem(RefreshAction.ES_URL_DEFAULT);
+        }
+    }
+
+    public final ElasticSearch getElasticSearch() {
+        String esURL = ((JTextField) esURLComboBox.getEditor().getEditorComponent()).getText();
+        boolean esOverrideCheckBoxValue = esURLOverrideCheckBox.isSelected();
+        return new ElasticSearch(esURL, esOverrideCheckBoxValue);
+    }
 }
+

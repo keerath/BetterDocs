@@ -18,6 +18,7 @@
 package com.imaginea.kodebeagle.settings.ui;
 
 import com.imaginea.kodebeagle.action.RefreshAction;
+import com.imaginea.kodebeagle.model.Limits;
 import com.intellij.util.ui.UIUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -236,6 +237,19 @@ public class LimitsPanel {
                 feedBackTextField.requestFocus();
             }
         }
+    }
+
+    public final void reset(final Limits limits) {
+        linesFromCursorSlider.setValue(limits.getLinesFromCursor());
+        resultSizeSpinner.setValue(limits.getResultSize());
+        topCountSpinner.setValue(limits.getTopCount());
+    }
+
+    public final Limits getLimits() {
+        int linesFromCursorValue = linesFromCursorSlider.getValue();
+        int sizeValue = (int) resultSizeSpinner.getValue();
+        int topCountValue = (int) topCountSpinner.getValue();
+        return new Limits(linesFromCursorValue, sizeValue, topCountValue);
     }
 }
 

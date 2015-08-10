@@ -21,12 +21,9 @@ import com.intellij.openapi.ui.ComboBox;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
 
 public class SettingsPanel {
 
@@ -65,6 +62,27 @@ public class SettingsPanel {
 
     private final IdentityPanel identityPanel = new IdentityPanel();
     private final LimitsPanel limitsPanel = new LimitsPanel();
+
+    public final NotificationPanel getNotificationPanel() {
+        return notificationPanel;
+    }
+
+    public final ElasticSearchPanel getElasticSearchPanel() {
+        return elasticSearchPanel;
+    }
+
+    public final ImportsPanel getImportsPanel() {
+        return importsPanel;
+    }
+
+    public final LimitsPanel getLimitsPanel() {
+        return limitsPanel;
+    }
+
+    public final IdentityPanel getIdentityPanel() {
+        return identityPanel;
+    }
+
     private final ImportsPanel importsPanel = new ImportsPanel();
     private final ElasticSearchPanel elasticSearchPanel = new ElasticSearchPanel();
     private final NotificationPanel notificationPanel = new NotificationPanel();
@@ -73,44 +91,12 @@ public class SettingsPanel {
         return identityPanel.getBeagleIdValue();
     }
 
-    public final JCheckBox getOptOutCheckBox() {
-        return identityPanel.getOptOut();
-    }
-
-    public final JSlider getLinesFromCursorSlider() {
-        return  limitsPanel.getLinesFromCursorSlider();
-    }
-
-    public final JSpinner getTopCountSpinner() {
-        return limitsPanel.getTopCountSpinner();
-    }
-
-    public final JSpinner getResultSizeSpinner() {
-        return limitsPanel.getResultSizeSpinner();
-    }
-
-    public final JCheckBox getEsURLOverrideCheckBox() {
-        return elasticSearchPanel.getEsURLOverrideCheckBox();
-    }
-
     public final ComboBox getEsURLComboBox() {
         return elasticSearchPanel.getEsURLComboBox();
     }
 
     public final PatternFilterEditor getImportsPatternFilter() {
         return importsPanel.getImportsPatternFilter();
-    }
-
-    public final JCheckBox getExcludeImportsCheckBox() {
-        return importsPanel.getExcludeImportsCheckBox();
-    }
-
-    public final JCheckBox getNotificationsCheckBox() {
-        return notificationPanel.getNotificationCheckBox();
-    }
-
-    public final JCheckBox getLoggingCheckBox() {
-        return notificationPanel.getLoggingCheckBox();
     }
 
     public final JComponent createPanel() {

@@ -148,7 +148,7 @@ public class ESUtils {
             StringBuilder esGetURL = new StringBuilder(url).append(encodedJson).append(UID);
             Settings currentSettings = new Settings();
             HttpGet getRequest;
-            if (!currentSettings.getOptOutCheckBoxValue()) {
+            if (!currentSettings.getIdentity().getOptOutCheckBoxValue()) {
                 esGetURL =
                         new StringBuilder(esGetURL).append(windowObjects.getBeagleId());
                 String versionInfo = windowObjects.getOsInfo() + "  "

@@ -80,6 +80,7 @@ public class RefreshAction extends AnAction {
     private static final String FOR = "for";
     public static final String EXCLUDE_IMPORT_PATTERN = "Exclude imports pattern";
     public static final String EXCLUDE_IMPORT_CHECKBOX_VALUE = "Exclude imports checkbox value";
+    public static final String EXCLUDE_INTERNAL_IMPORT_CHECKBOX_VALUE = "Exclude internal imports";
     public static final String EXCLUDE_IMPORT_DEFAULT_CHECKBOX_VALUE = "false";
     public static final String EXCLUDE_IMPORT_STATE = "Exclude imports state";
     public static final String OLD_EXCLUDE_IMPORT_LIST = "Exclude imports";
@@ -288,9 +289,9 @@ public class RefreshAction extends AnAction {
                                                    final Pair<Integer, Integer> pair) {
         Set<String> imports = editorDocOps.getImportInLines(projectEditor, pair);
         if (!imports.isEmpty()) {
-            if (currentSettings.getExcludeImportsCheckBoxValue()) {
+            if (currentSettings.getImports().getExcludeImportsCheckBoxValue()) {
                 List<ClassFilter> importFilters =
-                        currentSettings.getFilterList();
+                        currentSettings.getImports().getFilterList();
                 Set<String> excludeImports = new HashSet<>();
                 for (ClassFilter importFilter : importFilters) {
                     if (importFilter.isEnabled()) {
@@ -316,7 +317,7 @@ public class RefreshAction extends AnAction {
             windowObjects.setProject(project);
             windowObjects.setDistance(currentSettings.getLimits().getLinesFromCursor());
             windowObjects.setSize(currentSettings.getLimits().getResultSize());
-            windowObjects.setEsURL(currentSettings.getEsURLComboBoxModel().getSelectedEsURL());
+            windowObjects.setEsURL(currentSettings.getElasticSearch().getSelectedEsURL());
             maxTinyEditors = currentSettings.getLimits().getTopCount();
             windowEditorOps.writeToDocument("", windowObjects.getWindowEditor().getDocument());
             runAction();

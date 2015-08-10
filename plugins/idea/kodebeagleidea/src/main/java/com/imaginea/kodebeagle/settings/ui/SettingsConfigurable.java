@@ -17,59 +17,45 @@
 
 package com.imaginea.kodebeagle.settings.ui;
 
-import com.imaginea.kodebeagle.action.RefreshAction;
+import com.imaginea.kodebeagle.model.ElasticSearch;
+import com.imaginea.kodebeagle.model.Identity;
+import com.imaginea.kodebeagle.model.Imports;
+import com.imaginea.kodebeagle.model.Limits;
+import com.imaginea.kodebeagle.model.Notifications;
 import com.imaginea.kodebeagle.model.Settings;
-import com.imaginea.kodebeagle.object.WindowObjects;
-import com.intellij.ide.util.PropertiesComponent;
+import com.imaginea.kodebeagle.model.SettingsBuilder;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.ui.classFilter.ClassFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 public class SettingsConfigurable implements Configurable {
-
-    public static final String BEAGLE_ID = "Beagle ID:";
     public static final String KODE_BEAGLE_SETTINGS = "KodeBeagle Settings";
-    private static final String NA = "Not Available";
     private SettingsPanel settingsPanel = new SettingsPanel();
     private JLabel beagleIdValue;
-    private JSpinner resultSizeSpinner;
-    private JSlider linesFromCursorSlider;
     private ComboBox esURLComboBox;
-    private JSpinner topCountSpinner;
-    private PatternFilterEditor importsPatternFilter;
-    private JCheckBox esURLOverrideCheckBox;
-    private JCheckBox excludeImportsCheckBox;
-    private JCheckBox optOutCheckBox;
-    private JCheckBox notificationCheckBox;
-    private JCheckBox loggingCheckBox;
-    private WindowObjects windowObjects = WindowObjects.getWindowObjects();
+    private IdentityPanel identityPanel;
+    private LimitsPanel limitsPanel;
+    private ImportsPanel importsPanel;
+    private ElasticSearchPanel elasticSearchPanel;
+    private NotificationPanel notificationPanel;
 
     private void getFields() {
         beagleIdValue = settingsPanel.getBeagleIdValue();
-        optOutCheckBox = settingsPanel.getOptOutCheckBox();
-        resultSizeSpinner = settingsPanel.getResultSizeSpinner();
-        linesFromCursorSlider = settingsPanel.getLinesFromCursorSlider();
         esURLComboBox = settingsPanel.getEsURLComboBox();
-        topCountSpinner = settingsPanel.getTopCountSpinner();
-        importsPatternFilter = settingsPanel.getImportsPatternFilter();
-        esURLOverrideCheckBox = settingsPanel.getEsURLOverrideCheckBox();
-        excludeImportsCheckBox = settingsPanel.getExcludeImportsCheckBox();
-        notificationCheckBox = settingsPanel.getNotificationsCheckBox();
-        loggingCheckBox = settingsPanel.getLoggingCheckBox();
+        identityPanel = settingsPanel.getIdentityPanel();
+        limitsPanel = settingsPanel.getLimitsPanel();
+        importsPanel = settingsPanel.getImportsPanel();
+        elasticSearchPanel = settingsPanel.getElasticSearchPanel();
+        notificationPanel = settingsPanel.getNotificationPanel();
     }
+
     @Nullable
     @Override
     public final JComponent createComponent() {
@@ -82,7 +68,7 @@ public class SettingsConfigurable implements Configurable {
     public final boolean isModified() {
         boolean isModified = false;
         Settings oldSettings = new Settings();
-        Settings newSettings = getSettings();
+        Settings newSettings = getNewSettings();
 
         if (!oldSettings.equals(newSettings)) {
             isModified = true;
@@ -93,86 +79,41 @@ public class SettingsConfigurable implements Configurable {
     @Override
     public final void apply() {
         settingsPanel.getImportsPatternFilter().stopEditing();
-        Settings newSettings = getSettings();
+        Settings newSettings = getNewSettings();
         List<String> currentEsURLs =
                 new ArrayList<>(
-                        Arrays.asList(newSettings.getEsURLComboBoxModel().getEsURLS()));
+                        Arrays.asList(newSettings.getElasticSearch().getEsURLS()));
         String esURL = ((JTextField) esURLComboBox.getEditor().getEditorComponent()).getText();
         if (!currentEsURLs.contains(esURL)) {
             currentEsURLs.add(esURL);
-            newSettings.getEsURLComboBoxModel().setEsURLS(
+            newSettings.getElasticSearch().setEsURLS(
                     currentEsURLs.toArray(new String[currentEsURLs.size()]));
         }
-        loadBeagleId(newSettings.getOptOutCheckBoxValue());
+        newSettings.getIdentity().loadBeagleId();
+        beagleIdValue.setText(newSettings.getIdentity().getBeagleIdValue());
         newSettings.save();
     }
 
-    private Settings getSettings() {
-        String esURLValue =
-                ((JTextField) esURLComboBox
-                        .getEditor().getEditorComponent()).getText();
-        Boolean esOverrideCheckBoxValue = esURLOverrideCheckBox.isSelected();
-        int sizeValue = (int) resultSizeSpinner.getValue();
-        int linesFromCursorValue = linesFromCursorSlider.getValue();
-        int topCountValue = (int) topCountSpinner.getValue();
-        boolean notificationCheckBoxValue = notificationCheckBox.isSelected();
-        boolean loggingCheckBoxValue = loggingCheckBox.isSelected();
-        List<ClassFilter> filtersList = Arrays.asList(importsPatternFilter.getFilters());
-        Boolean excludeImportsCheckBoxValue = excludeImportsCheckBox.isSelected();
-        Boolean optOutCheckBoxValue = optOutCheckBox.isSelected();
-        return new Settings(new Settings.Limits(linesFromCursorValue, sizeValue, topCountValue),
-                new Settings.EsURLComboBoxModel(esURLValue),
-                new Settings.Notifications(notificationCheckBoxValue, loggingCheckBoxValue),
-                esOverrideCheckBoxValue, filtersList,
-                excludeImportsCheckBoxValue, optOutCheckBoxValue);
-    }
-
-
-    private void loadBeagleId(final boolean optOutCheckBoxValue) {
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-        if (!optOutCheckBoxValue) {
-            if (!propertiesComponent.isValueSet(BEAGLE_ID)) {
-                windowObjects.setBeagleId(UUID.randomUUID().toString());
-                beagleIdValue.setText(windowObjects.getBeagleId());
-            } else {
-                beagleIdValue.setText(propertiesComponent.getValue(BEAGLE_ID));
-            }
-        } else {
-            beagleIdValue.setText(NA);
-        }
+    private Settings getNewSettings() {
+        Identity identity = identityPanel.getIdentity();
+        Limits limits = limitsPanel.getLimits();
+        Imports imports = importsPanel.getImports();
+        ElasticSearch elasticSearch = elasticSearchPanel.getElasticSearch();
+        Notifications notifications = notificationPanel.getNotifications();
+        return SettingsBuilder.settings().withIdentity(identity)
+                .withLimits(limits).withImports(imports)
+                .withElasticSearch(elasticSearch)
+                .withNotifications(notifications).build();
     }
 
     @Override
     public final void reset() {
         Settings mySettings = new Settings();
-        loadBeagleId(mySettings.getOptOutCheckBoxValue());
-        optOutCheckBox.setSelected(mySettings.getOptOutCheckBoxValue());
-        linesFromCursorSlider.setValue(mySettings.getLimits().getLinesFromCursor());
-        resultSizeSpinner.setValue(mySettings.getLimits().getResultSize());
-        topCountSpinner.setValue(mySettings.getLimits().getTopCount());
-        esURLComboBox.setModel(
-                new DefaultComboBoxModel(
-                        mySettings.getEsURLComboBoxModel().getEsURLS()));
-        notificationCheckBox.setSelected(
-                mySettings.getNotifications().getNotificationsCheckBoxValue());
-        loggingCheckBox.setSelected(mySettings.getNotifications().getLoggingCheckBoxValue());
-        esURLOverrideCheckBox.setSelected(mySettings.getEsOverrideCheckBoxValue());
-        List<ClassFilter> filtersList = mySettings.getFilterList();
-        excludeImportsCheckBox.setSelected(mySettings.getExcludeImportsCheckBoxValue());
-        importsPatternFilter.setFilters(filtersList.toArray(new ClassFilter[filtersList.size()]));
-        if (esURLOverrideCheckBox.isSelected()) {
-            esURLComboBox.setEnabled(true);
-            esURLComboBox.setSelectedItem(mySettings.getEsURLComboBoxModel().getSelectedEsURL());
-        } else {
-            esURLComboBox.setEnabled(false);
-            esURLComboBox.setSelectedItem(RefreshAction.ES_URL_DEFAULT);
-        }
-
-        if (excludeImportsCheckBox.isSelected()) {
-            importsPatternFilter.setEnabled(true);
-        } else {
-            importsPatternFilter.setEnabled(false);
-        }
+        identityPanel.reset(mySettings.getIdentity());
+        limitsPanel.reset(mySettings.getLimits());
+        importsPanel.reset(mySettings.getImports());
+        elasticSearchPanel.reset(mySettings.getElasticSearch());
+        notificationPanel.reset(mySettings.getNotifications());
     }
 
     @Override
