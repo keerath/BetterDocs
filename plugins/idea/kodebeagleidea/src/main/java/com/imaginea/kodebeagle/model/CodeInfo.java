@@ -22,7 +22,7 @@ import java.util.List;
 public class CodeInfo {
     private List<Integer> lineNumbers;
     private String contents;
-    private String fileName;
+    private String absoluteFileName;
 
     public final List<Integer> getLineNumbers() {
         return this.lineNumbers;
@@ -32,12 +32,12 @@ public class CodeInfo {
         return this.contents;
     }
 
-    public final String getFileName() {
-        return fileName;
+    public final String getAbsoluteFileName() {
+        return absoluteFileName;
     }
 
     public CodeInfo(final String pfileName, final List<Integer> plineNumbers) {
-        this.fileName = pfileName;
+        this.absoluteFileName = pfileName;
         this.lineNumbers = plineNumbers;
     }
 
@@ -46,7 +46,12 @@ public class CodeInfo {
     }
 
     public final String toString() {
-        return fileName.substring(fileName.lastIndexOf("/") + 1);
+        return absoluteFileName.substring(absoluteFileName.lastIndexOf("/") + 1);
     }
+
+    public final String getDisplayFileName() {
+        return absoluteFileName.substring(absoluteFileName.lastIndexOf("/") + 1);
+    }
+
 }
 

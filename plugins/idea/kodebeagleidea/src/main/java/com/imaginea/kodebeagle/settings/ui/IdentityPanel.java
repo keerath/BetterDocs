@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.imaginea.kodebeagle.ui;
+package com.imaginea.kodebeagle.settings.ui;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;

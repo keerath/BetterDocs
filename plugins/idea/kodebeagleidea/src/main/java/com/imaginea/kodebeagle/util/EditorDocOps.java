@@ -17,7 +17,9 @@
 
 package com.imaginea.kodebeagle.util;
 
+import com.google.common.base.Preconditions;
 import com.imaginea.kodebeagle.object.WindowObjects;
+import com.imaginea.kodebeagle.ui.KBNotification;
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandler;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
@@ -34,6 +36,8 @@ import com.intellij.openapi.editor.markup.MarkupModel;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.roots.PackageIndex;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
@@ -47,16 +51,14 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import java.awt.Color;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -190,37 +192,43 @@ public class EditorDocOps {
                     }
                 }
             } catch (PatternSyntaxException e) {
+                KBNotification.getInstance().error(e);
                 e.printStackTrace();
             }
         }
         return excludedImports;
     }
 
-    public final VirtualFile getVirtualFile(final String fileName, final String contents) {
-        String tempDir = System.getProperty(JAVA_IO_TMP_DIR);
-        String filePath = tempDir + "/" + fileName;
-        File file = new File(filePath);
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } else {
-            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
-            windowEditorOps.setWriteStatus(virtualFile, true);
-        }
-        try {
-            BufferedWriter bufferedWriter =
-                    new BufferedWriter(
-                            new OutputStreamWriter(new FileOutputStream(file), ESUtils.UTF_8));
-            bufferedWriter.write(contents);
-            bufferedWriter.close();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        file.deleteOnExit();
+    public final VirtualFile getVirtualFile(final String fileName,
+                                            final String displayFileName,
+                                            final String contents)
+            throws IOException, NoSuchAlgorithmException {
+
+        final String tempDir = System.getProperty(JAVA_IO_TMP_DIR);
+        final String trimmedFileName =
+                FileUtil.sanitizeFileName(StringUtil.trimEnd(fileName, displayFileName));
+        final String digest = Utils.getInstance().getDigestAsString(trimmedFileName);
+        final String fullFilePath = Utils.getInstance()
+                .createFileWithContents(displayFileName, contents, tempDir, digest);
+        return getVirtualFile(fullFilePath, displayFileName, contents, tempDir);
+    }
+
+    private VirtualFile getVirtualFile(final String filePath, final String displayFileName,
+                                             final String contents, final String baseDir)
+            throws IOException {
+
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
+        if (virtualFile == null) {
+            // This happens when intellij is confused about the existence of the file.
+            // Essentially it thinks the file was deleted, but we restored it.
+            // Unfortunately, it can not infer the fact that it was restored again.
+            String digest = UUID.randomUUID().toString().substring(0, 10);
+            final String fullFilePath = Utils.getInstance()
+                            .createFileWithContents(displayFileName, contents, baseDir, digest);
+            virtualFile = LocalFileSystem.getInstance().findFileByPath(fullFilePath);
+            Preconditions.checkNotNull(virtualFile,
+                    "Virtual file should not be null. Can be an issue with FileSystem.");
+        }
         windowEditorOps.setWriteStatus(virtualFile, false);
         return virtualFile;
     }

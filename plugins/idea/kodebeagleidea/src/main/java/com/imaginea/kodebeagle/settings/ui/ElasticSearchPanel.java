@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.imaginea.kodebeagle.ui;
+package com.imaginea.kodebeagle.settings.ui;
 
 import com.imaginea.kodebeagle.action.RefreshAction;
 import com.intellij.openapi.ui.ComboBox;

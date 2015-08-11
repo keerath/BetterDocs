@@ -18,7 +18,7 @@
 package com.imaginea.kodebeagle.model;
 
 import com.imaginea.kodebeagle.action.RefreshAction;
-import com.imaginea.kodebeagle.ui.LimitsPanel;
+import com.imaginea.kodebeagle.settings.ui.LimitsPanel;
 import com.imaginea.kodebeagle.ui.MainWindow;
 import com.intellij.debugger.impl.DebuggerUtilsEx;
 import com.intellij.ide.util.PropertiesComponent;

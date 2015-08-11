@@ -22,6 +22,8 @@ import com.imaginea.kodebeagle.action.EditSettingsAction;
 import com.imaginea.kodebeagle.action.ExpandProjectTreeAction;
 import com.imaginea.kodebeagle.action.RefreshAction;
 import com.imaginea.kodebeagle.object.WindowObjects;
+import com.imaginea.kodebeagle.settings.ui.LegalNotice;
+import com.imaginea.kodebeagle.settings.ui.SettingsConfigurable;
 import com.imaginea.kodebeagle.util.WindowEditorOps;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
@@ -178,11 +180,11 @@ public class MainWindow implements ToolWindowFactory {
                 + System.getProperty(OS_VERSION));
         windowObjects.setApplicationVersion(ApplicationInfo.getInstance().getVersionName()
                 + "/" + ApplicationInfo.getInstance().getBuild().toString());
-        IdeaPluginDescriptor codeBeagleVersion =
+        IdeaPluginDescriptor kodeBeagleVersion =
                 PluginManager.getPlugin(PluginId.getId(PLUGIN_ID));
 
-        if (codeBeagleVersion != null) {
-            windowObjects.setPluginVersion(IDEA_PLUGIN + "/" + codeBeagleVersion.getVersion());
+        if (kodeBeagleVersion != null) {
+            windowObjects.setPluginVersion(IDEA_PLUGIN + "/" + kodeBeagleVersion.getVersion());
         }
     }
 }

@@ -17,7 +17,7 @@
 
 package com.imaginea.kodebeagle.action;
 
-import com.imaginea.kodebeagle.ui.SettingsConfigurable;
+import com.imaginea.kodebeagle.settings.ui.SettingsConfigurable;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;

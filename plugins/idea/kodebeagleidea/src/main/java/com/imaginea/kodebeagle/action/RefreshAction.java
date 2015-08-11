@@ -18,10 +18,11 @@
 package com.imaginea.kodebeagle.action;
 
 import com.imaginea.kodebeagle.model.CodeInfo;
+import com.imaginea.kodebeagle.model.Settings;
 import com.imaginea.kodebeagle.object.WindowObjects;
+import com.imaginea.kodebeagle.ui.KBNotification;
 import com.imaginea.kodebeagle.ui.MainWindow;
 import com.imaginea.kodebeagle.ui.ProjectTree;
-import com.imaginea.kodebeagle.model.Settings;
 import com.imaginea.kodebeagle.ui.WrapLayout;
 import com.imaginea.kodebeagle.util.ESUtils;
 import com.imaginea.kodebeagle.util.EditorDocOps;
@@ -32,7 +33,6 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.DataManager;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
@@ -49,8 +49,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.classFilter.ClassFilter;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.classFilter.ClassFilter;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
@@ -164,6 +164,7 @@ public class RefreshAction extends AnAction {
         try {
             init();
         } catch (IOException ioe) {
+            KBNotification.getInstance().error(ioe);
             ioe.printStackTrace();
         }
     }
@@ -185,9 +186,9 @@ public class RefreshAction extends AnAction {
             if (editorDocOps.isJavaFile(projectEditor.getDocument())) {
                 editorDocOps.setLineOffSets(projectEditor, windowObjects.getDistance());
                 Set<String> allImports = getAllImportsAfterExcludes(projectEditor);
-                if (!allImports.isEmpty()) {
-                    ProgressManager.getInstance().run(new QueryBDServerTask(allImports,
-                            jTree, model, root));
+                    if (!allImports.isEmpty()) {
+                        ProgressManager.getInstance().run(new QueryKBServerTask(allImports,
+                                jTree, model, root));
                 } else {
                     if (projectEditor.getSelectionModel().hasSelection()) {
                         showHelpInfo(HELP_MESSAGE_IF_CODE_SELECTED);
@@ -236,7 +237,7 @@ public class RefreshAction extends AnAction {
     private List<String> getFileNamesListForTinyEditors(final List<CodeInfo> codePaneTinyEditors) {
         List<String> fileNamesList = new ArrayList<String>();
         for (CodeInfo codePaneTinyEditorInfo : codePaneTinyEditors) {
-            fileNamesList.add(codePaneTinyEditorInfo.getFileName());
+            fileNamesList.add(codePaneTinyEditorInfo.getAbsoluteFileName());
         }
         return fileNamesList;
     }
@@ -246,7 +247,7 @@ public class RefreshAction extends AnAction {
         int tail = CHUNK_SIZE - 1;
         for (int i = 1; i <= (fileNamesList.size() / CHUNK_SIZE); i++) {
             List<String> subFileNamesList = fileNamesList.subList(head, tail);
-            esUtils.putContentsForFileInMap(subFileNamesList);
+            esUtils.fetchContentsAndUpdateMap(subFileNamesList);
             head = tail + 1;
             tail += CHUNK_SIZE;
         }
@@ -277,13 +278,14 @@ public class RefreshAction extends AnAction {
         sortCodePaneTinyEditorsInfoList(codePaneTinyEditors);
 
         for (CodeInfo codePaneTinyEditorInfo : codePaneTinyEditors) {
-            String fileName = codePaneTinyEditorInfo.getFileName();
+            String fileName = codePaneTinyEditorInfo.getAbsoluteFileName();
             String fileContents = esUtils.getContentsForFile(fileName);
             List<Integer> lineNumbers = codePaneTinyEditorInfo.getLineNumbers();
 
             String contentsInLines = editorDocOps.getContentsInLines(fileContents, lineNumbers);
-            createCodePaneTinyEditor(codePaneTinyEditorsJPanel, codePaneTinyEditorInfo.toString(),
-                    codePaneTinyEditorInfo.getFileName(), contentsInLines);
+            createCodePaneTinyEditor(codePaneTinyEditorsJPanel,
+                    codePaneTinyEditorInfo.getDisplayFileName(),
+                    codePaneTinyEditorInfo.getAbsoluteFileName(), contentsInLines);
         }
     }
 
@@ -452,14 +454,6 @@ public class RefreshAction extends AnAction {
         });
     }
 
-    private Notification getNotification(final String title, final String content,
-                                         final NotificationType notificationType) {
-
-        final Notification notification = new Notification(KODEBEAGLE,
-                title, content, notificationType);
-        return notification;
-    }
-
     private class CodePaneTinyEditorExpandLabelMouseListener extends MouseAdapter {
         private final String displayFileName;
         private final String fileName;
@@ -475,17 +469,22 @@ public class RefreshAction extends AnAction {
 
         @Override
         public void mouseClicked(final MouseEvent e) {
-            VirtualFile virtualFile = editorDocOps.getVirtualFile(displayFileName,
-                    windowObjects.getFileNameContentsMap().get(fileName));
-            FileEditorManager.getInstance(windowObjects.getProject()).
-                    openFile(virtualFile, true, true);
-            Document document =
-                    EditorFactory.getInstance().createDocument(windowObjects.
-                            getFileNameContentsMap().get(fileName));
-            editorDocOps.addHighlighting(windowObjects.
-                    getFileNameNumbersMap().get(fileName), document);
-            editorDocOps.gotoLine(windowObjects.
-                    getFileNameNumbersMap().get(fileName).get(0), document);
+            try {
+                VirtualFile virtualFile = editorDocOps.getVirtualFile(fileName, displayFileName,
+                        windowObjects.getFileNameContentsMap().get(fileName));
+                FileEditorManager.getInstance(windowObjects.getProject()).
+                        openFile(virtualFile, true, true);
+                Document document =
+                        EditorFactory.getInstance().createDocument(windowObjects.
+                                getFileNameContentsMap().get(fileName));
+                editorDocOps.addHighlighting(windowObjects.
+                        getFileNameNumbersMap().get(fileName), document);
+                editorDocOps.gotoLine(windowObjects.
+                        getFileNameNumbersMap().get(fileName).get(0), document);
+            } catch (Exception exception) {
+                KBNotification.getInstance().error(exception);
+                exception.printStackTrace();
+            }
         }
 
         @Override
@@ -503,7 +502,7 @@ public class RefreshAction extends AnAction {
         }
     }
 
-    private class QueryBDServerTask extends Task.Backgroundable {
+    private class QueryKBServerTask extends Task.Backgroundable {
         public static final int MIN_IMPORT_SIZE = 3;
         private final Set<String> finalImports;
         private final JTree jTree;
@@ -514,7 +513,7 @@ public class RefreshAction extends AnAction {
         private volatile boolean isFailed;
         private String httpErrorMsg;
 
-        QueryBDServerTask(final Set<String> pFinalImports,
+        QueryKBServerTask(final Set<String> pFinalImports,
                           final JTree pJTree, final DefaultTreeModel pModel,
                           final DefaultMutableTreeNode pRoot) {
             super(windowObjects.getProject(), KODEBEAGLE, true,
@@ -532,20 +531,17 @@ public class RefreshAction extends AnAction {
                 projectNodes = doBackEndWork(finalImports, indicator);
                 long endTime = System.nanoTime();
                 double timeToFetchResults = (endTime - startTime) / CONVERT_TO_SECONDS;
-                if (windowObjects.getNotification() != null) {
-                    windowObjects.getNotification().expire();
-                }
+
                 String notificationTitle = String.format(FORMAT, QUERIED,
                         windowObjects.getEsURL(), FOR);
-                String notificationContent =
-                        getResultNotificationMessage(esUtils.getResultCount(),
+                String notificationContent = " "
+                        + getResultNotificationMessage(esUtils.getResultCount(),
                                 esUtils.getTotalHitsCount(), timeToFetchResults);
-                notification =
-                        getNotification(notificationTitle, notificationContent,
+                notification = KBNotification.getInstance()
+                        .notifyBalloon(notificationTitle + notificationContent,
                                 NotificationType.INFORMATION);
-                Notifications.Bus.notify(notification);
-                windowObjects.setNotification(notification);
             } catch (RuntimeException rte) {
+                KBNotification.getInstance().error(rte);
                 rte.printStackTrace();
                 httpErrorMsg = rte.getMessage();
                 isFailed = true;
@@ -554,10 +550,8 @@ public class RefreshAction extends AnAction {
 
         private String getResultNotificationMessage(final int resultCount, final long totalCount,
                                                     final double timeToFetchResults) {
-            String resultNotification =
-                    finalImports.toString() + String.format(RESULT_NOTIFICATION_FORMAT,
-                            resultCount, totalCount, timeToFetchResults);
-            return resultNotification;
+            return finalImports.toString() + String.format(RESULT_NOTIFICATION_FORMAT,
+                    resultCount, totalCount, timeToFetchResults);
         }
 
         @Override
@@ -569,6 +563,7 @@ public class RefreshAction extends AnAction {
                                 projectNodes);
                         goToFeaturedPane();
                     } catch (RuntimeException rte) {
+                        KBNotification.getInstance().error(rte);
                         rte.printStackTrace();
                     }
                 } else {
@@ -579,7 +574,9 @@ public class RefreshAction extends AnAction {
                     }
                     showHelpInfo(helpMsg);
                     jTree.updateUI();
-                    notification.expire();
+                    if (notification != null) {
+                        notification.expire();
+                    }
                 }
             } else {
                 showHelpInfo(httpErrorMsg);

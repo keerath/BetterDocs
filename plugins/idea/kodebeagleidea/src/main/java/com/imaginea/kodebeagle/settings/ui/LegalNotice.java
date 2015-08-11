@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.imaginea.kodebeagle.ui;
+package com.imaginea.kodebeagle.settings.ui;
 
-import com.imaginea.kodebeagle.util.ESUtils;
+import com.imaginea.kodebeagle.util.Utils;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.PluginManagerCore;
@@ -33,10 +33,7 @@ import com.intellij.util.ui.UIUtil;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -44,7 +41,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,8 +57,8 @@ public class LegalNotice extends DialogWrapper {
     private static final String KODEBEAGLE_NOTICE_FILENAME = "KODEBEAGLE_NOTICE";
     //This is a temporary URL, we will host this page to our website soon.
     private static final String KODEBEAGLE_PRIVACY_POLICY = "<html><div style=\"text-align:left\">"
-           + "&nbsp;&nbsp;<a href=\"https://github.com/Imaginea/KodeBeagle/tree/master/"
-           + "docs/KodeBeaglePrivacyPolicy.html\">Privacy Policy</a></div><br></html>";
+            + "&nbsp;&nbsp;<a href=\"https://github.com/Imaginea/KodeBeagle/tree/master/"
+            + "docs/KodeBeaglePrivacyPolicy.html\">Privacy Policy</a></div><br></html>";
     private static final Dimension MESSAGE_EDITOR_PANE_PREFERRED_SIZE = new Dimension(500, 100);
     private static final BorderLayout LEGAL_NOTICE_LAYOUT = new BorderLayout(10, 0);
     private static boolean legalNoticeAccepted =
@@ -73,7 +69,7 @@ public class LegalNotice extends DialogWrapper {
         return legalNoticeAccepted;
     }
 
-    protected final void showLegalNotice() {
+    public final void showLegalNotice() {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -82,7 +78,7 @@ public class LegalNotice extends DialogWrapper {
         });
     }
 
-    protected LegalNotice(@Nullable final Project pProject) {
+    public LegalNotice(@Nullable final Project pProject) {
         super(pProject);
         this.project = pProject;
         setTitle(LEGAL_NOTICE_TITLE);
@@ -150,16 +146,7 @@ public class LegalNotice extends DialogWrapper {
     private String getLegalNoticeMessage() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         InputStream stream = classLoader.getResourceAsStream(KODEBEAGLE_NOTICE_FILENAME);
-        StringBuilder legalNoticeMessage = new StringBuilder();
-        try (BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(stream, ESUtils.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                legalNoticeMessage.append(line);
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-        return String.format(legalNoticeMessage.toString());
+        return Utils.getInstance().readStreamFully(stream);
     }
+
 }

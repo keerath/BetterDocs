@@ -140,9 +140,9 @@ public class ProjectTree {
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(projectName);
         Collection<String> fileNameSet = new HashSet<String>();
         for (CodeInfo codeInfo : codeInfoCollection) {
-            if (!fileNameSet.contains(codeInfo.getFileName())) {
+            if (!fileNameSet.contains(codeInfo.getAbsoluteFileName())) {
                 node.add(new DefaultMutableTreeNode(codeInfo));
-                fileNameSet.add(codeInfo.getFileName());
+                fileNameSet.add(codeInfo.getAbsoluteFileName());
             }
         }
         return node;
@@ -190,7 +190,7 @@ public class ProjectTree {
             url = selectedNode.getUserObject().toString(); // getting project name
         } else if (root.getChildCount() > 0) {
             final CodeInfo codeInfo = (CodeInfo) selectedNode.getUserObject();
-            url = codeInfo.getFileName();
+            url = codeInfo.getAbsoluteFileName();
         }
         return url;
     }
@@ -199,16 +199,21 @@ public class ProjectTree {
         return new AbstractAction() {
             @Override
             public void actionPerformed(final ActionEvent actionEvent) {
-                VirtualFile virtualFile =
-                        editorDocOps.getVirtualFile(codeInfo.toString(),
-                                codeInfo.getContents());
-                FileEditorManager.getInstance(windowObjects.getProject()).
-                        openFile(virtualFile, true, true);
-                Document document =
-                        EditorFactory.getInstance().
-                                createDocument(codeInfo.getContents());
-                editorDocOps.addHighlighting(codeInfo.getLineNumbers(), document);
-                editorDocOps.gotoLine(codeInfo.getLineNumbers().get(0), document);
+                try {
+                    VirtualFile virtualFile =
+                            editorDocOps.getVirtualFile(codeInfo.getAbsoluteFileName(),
+                                    codeInfo.getDisplayFileName(), codeInfo.getContents());
+                    FileEditorManager.getInstance(windowObjects.getProject()).
+                            openFile(virtualFile, true, true);
+                    Document document =
+                            EditorFactory.getInstance().
+                                    createDocument(codeInfo.getContents());
+                    editorDocOps.addHighlighting(codeInfo.getLineNumbers(), document);
+                    editorDocOps.gotoLine(codeInfo.getLineNumbers().get(0), document);
+                } catch (Exception e) {
+                    KBNotification.getInstance().error(e);
+                    e.printStackTrace();
+                }
             }
         };
     }
@@ -230,7 +235,7 @@ public class ProjectTree {
         public void run(@NotNull final ProgressIndicator indicator) {
             indicator.setText(FETCHING_FILE_CONTENT);
             indicator.setFraction(0.0);
-            String fileName = codeInfo.getFileName();
+            String fileName = codeInfo.getAbsoluteFileName();
             fileContents = esUtils.getContentsForFile(fileName);
 
             //Setting contents so that we can use that for Open in New Tab

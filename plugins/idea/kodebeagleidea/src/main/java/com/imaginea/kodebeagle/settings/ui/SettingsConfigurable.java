@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.imaginea.kodebeagle.ui;
+package com.imaginea.kodebeagle.settings.ui;
 
 import com.imaginea.kodebeagle.action.RefreshAction;
 import com.imaginea.kodebeagle.model.Settings;
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SettingsConfigurable implements Configurable {
 
-    protected static final String BEAGLE_ID = "Beagle ID:";
+    public static final String BEAGLE_ID = "Beagle ID:";
     public static final String KODE_BEAGLE_SETTINGS = "KodeBeagle Settings";
     private static final String NA = "Not Available";
     private SettingsPanel settingsPanel = new SettingsPanel();
