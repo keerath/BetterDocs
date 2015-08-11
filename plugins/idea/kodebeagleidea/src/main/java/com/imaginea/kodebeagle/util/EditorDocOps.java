@@ -40,6 +40,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiImportList;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -109,6 +110,7 @@ public class EditorDocOps {
                 (PsiJavaFile) psiInstance.getPsiFile(projectEditor.getDocument());
         PsiJavaElementVisitor psiJavaElementVisitor =
                 new PsiJavaElementVisitor(start, end);
+        Set<String> finalImports = new HashSet<>();
         if (psiJavaFile != null && psiJavaFile.findElementAt(start) != null) {
             PsiElement psiElement = psiJavaFile.findElementAt(start);
             final PsiElement psiMethod =  PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
@@ -120,10 +122,25 @@ public class EditorDocOps {
                     psiClass.accept(psiJavaElementVisitor);
                 }
             }
+            Set<String> importsInLines = psiJavaElementVisitor.getImportsSet();
+            importsInLines = removeImplicitImports(importsInLines);
+            finalImports = validateImports(psiJavaFile, importsInLines);
         }
-        Set<String> importsInLines = psiJavaElementVisitor.getImportsSet();
-        importsInLines = removeImplicitImports(importsInLines);
-        return importsInLines;
+        return finalImports;
+    }
+
+    private Set<String> validateImports(final PsiJavaFile javaFile,
+                                        final Set<String> importInLines) {
+        Set<String> finalImports = new HashSet<String>();
+        PsiImportList userImports = javaFile.getImportList();
+        if (userImports != null) {
+            for (String importStatement : importInLines) {
+                if (userImports.findSingleClassImportStatement(importStatement) != null) {
+                    finalImports.add(importStatement);
+                }
+            }
+        }
+        return finalImports;
     }
 
     private Set<String> removeImplicitImports(final Set<String> importsInLines) {

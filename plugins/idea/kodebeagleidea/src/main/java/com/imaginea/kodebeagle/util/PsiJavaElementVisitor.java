@@ -19,6 +19,7 @@ package com.imaginea.kodebeagle.util;
 
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiAssignmentExpression;
+import com.intellij.psi.PsiCatchSection;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
@@ -70,11 +71,13 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
             } else if (element.getNode().getElementType().
                     equals(JavaElementType.DECLARATION_STATEMENT)) {
                 visitPsiDeclarationStatement((PsiDeclarationStatement) element);
+            } else if (element.getNode().getElementType().equals(JavaElementType.CATCH_SECTION)) {
+                visitPsiCatchSection((PsiCatchSection) element);
             }
         }
     }
 
-    public final void visitPsiAssignmentExpression(final PsiAssignmentExpression
+    private void visitPsiAssignmentExpression(final PsiAssignmentExpression
                                                            assignmentExpression) {
         PsiType lExpressionType = assignmentExpression.getLExpression().getType();
         if (lExpressionType != null && !ClassUtils.isPrimitive(lExpressionType)) {
@@ -91,7 +94,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         }
     }
 
-    public final void visitPsiDeclarationStatement(final PsiDeclarationStatement
+    private void visitPsiDeclarationStatement(final PsiDeclarationStatement
                                                            declarationStatement) {
          Collection<PsiTypeElement> typeElements =
                  PsiTreeUtil.findChildrenOfType(declarationStatement, PsiTypeElement.class);
@@ -101,7 +104,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         }
     }
 
-    public final void visitPsiNewExpression(final PsiNewExpression element) {
+    private void visitPsiNewExpression(final PsiNewExpression element) {
         if (element.getType() != null) {
             PsiType psiType = element.getType();
             if (psiType != null && !ClassUtils.isPrimitive(psiType)) {
@@ -111,7 +114,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         }
     }
 
-    public final void visitPsiFields(final PsiField psiField) {
+    private void visitPsiFields(final PsiField psiField) {
         if (!ClassUtils.isPrimitive(psiField.getType())) {
             String type = removeSpecialSymbols(psiField.getType().getCanonicalText());
             if (psiField.getInitializer() != null) {
@@ -129,7 +132,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         }
     }
 
-    public final void visitPsiMethodCallExpression(final PsiMethodCallExpression element) {
+    private void visitPsiMethodCallExpression(final PsiMethodCallExpression element) {
         PsiReferenceExpression methodExpr = element.getMethodExpression();
         if (methodExpr.getQualifierExpression() != null) {
             PsiExpression psiExpression = methodExpr.getQualifierExpression();
@@ -147,6 +150,13 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
                     }
                 }
             }
+        }
+    }
+
+    private void visitPsiCatchSection(final PsiCatchSection element) {
+        PsiType catchType = element.getCatchType();
+        if (catchType != null) {
+            importsSet.add(catchType.getCanonicalText());
         }
     }
 
