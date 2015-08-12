@@ -45,15 +45,23 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiImportList;
+import com.intellij.psi.PsiImportStatement;
+import com.intellij.psi.PsiJavaCodeReferenceCodeFragment;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiPackage;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import java.awt.Color;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,37 +120,43 @@ public class EditorDocOps {
                 (PsiJavaFile) psiInstance.getPsiFile(projectEditor.getDocument());
         PsiJavaElementVisitor psiJavaElementVisitor =
                 new PsiJavaElementVisitor(start, end);
-        Set<String> finalImports = new HashSet<>();
+        Set<String> userImports = new HashSet<>();
         if (psiJavaFile != null && psiJavaFile.findElementAt(start) != null) {
             PsiElement psiElement = psiJavaFile.findElementAt(start);
-            final PsiElement psiMethod =  PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
-            if (psiMethod != null) {
-                psiMethod.accept(psiJavaElementVisitor);
-            } else {
-                final PsiClass psiClass = PsiTreeUtil.getParentOfType(psiElement, PsiClass.class);
-                if (psiClass != null) {
+            final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
+            final PsiClass psiClass = PsiTreeUtil.getParentOfType(psiElement, PsiClass.class);
+            if (psiClass != null) {
+                if (psiMethod != null) {
+                    psiMethod.accept(psiJavaElementVisitor);
+                } else {
                     psiClass.accept(psiJavaElementVisitor);
                 }
+                userImports = getImports(psiJavaFile, psiClass);
             }
-            Set<String> importsInLines = psiJavaElementVisitor.getImportsSet();
-            importsInLines = removeImplicitImports(importsInLines);
-            finalImports = validateImports(psiJavaFile, importsInLines);
         }
-        return finalImports;
+        Set<String> importsInLines = psiJavaElementVisitor.getImportsSet();
+        importsInLines.retainAll(userImports);
+        return importsInLines;
     }
 
-    private Set<String> validateImports(final PsiJavaFile javaFile,
-                                        final Set<String> importInLines) {
-        Set<String> finalImports = new HashSet<String>();
-        PsiImportList userImports = javaFile.getImportList();
-        if (userImports != null) {
-            for (String importStatement : importInLines) {
-                if (userImports.findSingleClassImportStatement(importStatement) != null) {
-                    finalImports.add(importStatement);
+    private Set<String> getImports(PsiJavaFile javaFile, PsiClass psiClass) {
+        Set<String> imports = new HashSet<>();
+        PsiImportList importList = javaFile.getImportList();
+        Collection<PsiImportStatement> importStatements =
+                PsiTreeUtil.findChildrenOfType(importList, PsiImportStatement.class);
+        for (PsiImportStatement importStatement : importStatements) {
+            if (importStatement != null) {
+                if (importStatement.isOnDemand()) {
+                    PsiClassVisitor visitor = new PsiClassVisitor(start, end,
+                            importStatement.getQualifiedName());
+                    psiClass.accept(visitor);
+                    imports.addAll(visitor.getFullyQualifiedImports());
+                } else {
+                    imports.add(importStatement.getQualifiedName());
                 }
             }
         }
-        return finalImports;
+        return imports;
     }
 
     private Set<String> removeImplicitImports(final Set<String> importsInLines) {
@@ -214,7 +228,7 @@ public class EditorDocOps {
     }
 
     private VirtualFile getVirtualFile(final String filePath, final String displayFileName,
-                                             final String contents, final String baseDir)
+                                       final String contents, final String baseDir)
             throws IOException {
 
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
@@ -224,7 +238,7 @@ public class EditorDocOps {
             // Unfortunately, it can not infer the fact that it was restored again.
             String digest = UUID.randomUUID().toString().substring(0, 10);
             final String fullFilePath = Utils.getInstance()
-                            .createFileWithContents(displayFileName, contents, baseDir, digest);
+                    .createFileWithContents(displayFileName, contents, baseDir, digest);
             virtualFile = LocalFileSystem.getInstance().findFileByPath(fullFilePath);
             Preconditions.checkNotNull(virtualFile,
                     "Virtual file should not be null. Can be an issue with FileSystem.");

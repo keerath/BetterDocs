@@ -20,10 +20,12 @@ package com.imaginea.kodebeagle.util;
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiCatchSection;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNewExpression;
 import com.intellij.psi.PsiReference;
@@ -32,19 +34,26 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.impl.source.tree.JavaElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import com.siyeh.ig.psiutils.ClassUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.codehaus.groovy.ast.ASTNode;
 
 public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
-    private Set<String> importsSet;
-    private int startOffset;
-    private int endOffset;
+    private final Set<String> importsSet;
+    private final int startOffset;
+    private final int endOffset;
+    private final Set<PsiType> typeImportsSet = new HashSet<>();
 
     public final Set<String> getImportsSet() {
         return importsSet;
+    }
+
+    public final Set<PsiType> getImportedTypes() {
+        return typeImportsSet;
     }
 
     public PsiJavaElementVisitor(final int start, final int end) {
@@ -53,6 +62,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         startOffset = start;
         endOffset = end;
     }
+
 
     @Override
     public final void visitElement(final PsiElement element) {
@@ -83,13 +93,16 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         if (lExpressionType != null && !ClassUtils.isPrimitive(lExpressionType)) {
             String type = removeSpecialSymbols(lExpressionType.getCanonicalText());
             importsSet.add(type);
+            typeImportsSet.add(lExpressionType);
         }
+
         PsiExpression rExpression = assignmentExpression.getRExpression();
         if (rExpression != null) {
             PsiType rExpressionType = rExpression.getType();
             if (rExpressionType != null && !ClassUtils.isPrimitive(rExpressionType)) {
                 String type = removeSpecialSymbols(rExpressionType.getCanonicalText());
                 importsSet.add(type);
+                typeImportsSet.add(rExpressionType);
             }
         }
     }
@@ -101,6 +114,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
         for (PsiTypeElement element : typeElements) {
             String type = removeSpecialSymbols(element.getType().getCanonicalText());
             importsSet.add(type);
+            typeImportsSet.add(element.getType());
         }
     }
 
@@ -110,6 +124,7 @@ public class PsiJavaElementVisitor extends JavaRecursiveElementVisitor {
             if (psiType != null && !ClassUtils.isPrimitive(psiType)) {
                 String type = removeSpecialSymbols(psiType.getCanonicalText());
                 importsSet.add(type);
+                typeImportsSet.add(psiType);
             }
         }
     }
