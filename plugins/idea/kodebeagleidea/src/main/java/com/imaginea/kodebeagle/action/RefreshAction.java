@@ -48,6 +48,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.classFilter.ClassFilter;
@@ -184,8 +185,9 @@ public class RefreshAction extends AnAction {
             windowObjects.getCodePaneTinyEditorsJPanel().removeAll();
 
             if (editorDocOps.isJavaFile(projectEditor.getDocument())) {
-                editorDocOps.setLineOffSets(projectEditor, windowObjects.getDistance());
-                Set<String> allImports = getAllImportsAfterExcludes(projectEditor);
+                Pair<Integer, Integer> pair =
+                        editorDocOps.getLineOffSets(projectEditor, windowObjects.getDistance());
+                Set<String> allImports = getAllImportsAfterExcludes(projectEditor, pair);
                 if (!allImports.isEmpty()) {
                     ProgressManager.getInstance().run(new QueryKBServerTask(allImports,
                             jTree, model, root));
@@ -402,8 +404,9 @@ public class RefreshAction extends AnAction {
         return projectNodes;
     }
 
-    private Set<String> getAllImportsAfterExcludes(final Editor projectEditor) {
-        Set<String> imports = editorDocOps.getImportInLines(projectEditor);
+    private Set<String> getAllImportsAfterExcludes(final Editor projectEditor,
+                                                   final Pair<Integer, Integer> pair) {
+        Set<String> imports = editorDocOps.getImportInLines(projectEditor, pair);
         if (!imports.isEmpty()) {
             if (currentSettings.getExcludeImportsCheckBoxValue()) {
                 List<ClassFilter> importFilters =

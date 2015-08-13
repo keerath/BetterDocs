@@ -36,6 +36,7 @@ import com.intellij.openapi.editor.markup.MarkupModel;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.roots.PackageIndex;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -77,10 +78,9 @@ public class EditorDocOps {
     private static final Color HIGHLIGHTING_COLOR =
             new JBColor(new Color(255, 250, 205), Gray._100);
     public static final char DOT = '.';
-    private int start;
-    private int end;
 
-    public final void setLineOffSets(final Editor projectEditor, final int distance) {
+    public final Pair<Integer, Integer> getLineOffSets(final Editor projectEditor,
+                                                       final int distance) {
         Document document = projectEditor.getDocument();
         SelectionModel selectionModel = projectEditor.getSelectionModel();
         int head = 0;
@@ -105,20 +105,23 @@ public class EditorDocOps {
                 tail = currentLine + distance;
             }
         }
-        start = document.getLineStartOffset(head);
-        end = document.getLineEndOffset(tail);
+        int start = document.getLineStartOffset(head);
+        int end = document.getLineEndOffset(tail);
+        Pair<Integer, Integer> pair = new Pair<>(start, end);
+        return pair;
     }
 
-    public final Set<String> getImportInLines(final Editor projectEditor) {
+    public final Set<String> getImportInLines(final Editor projectEditor,
+                                              final Pair<Integer, Integer> pair) {
         PsiDocumentManager psiInstance =
                 PsiDocumentManager.getInstance(windowObjects.getProject());
         PsiJavaFile psiJavaFile =
                 (PsiJavaFile) psiInstance.getPsiFile(projectEditor.getDocument());
         PsiJavaElementVisitor psiJavaElementVisitor =
-                new PsiJavaElementVisitor(start, end);
+                new PsiJavaElementVisitor(pair.getFirst(), pair.getSecond());
         Set<String> finalImports = new HashSet<>();
-        if (psiJavaFile != null && psiJavaFile.findElementAt(start) != null) {
-            PsiElement psiElement = psiJavaFile.findElementAt(start);
+        if (psiJavaFile != null && psiJavaFile.findElementAt(pair.getFirst()) != null) {
+            PsiElement psiElement = psiJavaFile.findElementAt(pair.getFirst());
             final PsiElement psiMethod =  PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
             if (psiMethod != null) {
                 psiMethod.accept(psiJavaElementVisitor);
@@ -150,7 +153,6 @@ public class EditorDocOps {
         }
         return finalImports;
     }
-
 
     private Set<String> getFullyQualifiedImports(final PsiJavaFile javaFile,
                                                 final Set<String> importsInLines) {
