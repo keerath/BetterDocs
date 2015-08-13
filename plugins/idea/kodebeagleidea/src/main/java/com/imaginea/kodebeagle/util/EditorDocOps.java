@@ -17,7 +17,6 @@
 
 package com.imaginea.kodebeagle.util;
 
-import com.google.common.base.Preconditions;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import com.imaginea.kodebeagle.ui.KBNotification;
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandler;
@@ -230,8 +229,10 @@ public class EditorDocOps {
             final String fullFilePath = Utils.getInstance()
                             .createFileWithContents(displayFileName, contents, baseDir, digest);
             virtualFile = LocalFileSystem.getInstance().findFileByPath(fullFilePath);
-            Preconditions.checkNotNull(virtualFile,
-                    "Virtual file should not be null. Can be an issue with FileSystem.");
+            if (virtualFile == null) {
+                throw new IllegalArgumentException("Virtual file should not be null."
+                        + " Can be an issue with FileSystem.");
+            }
         }
         windowEditorOps.setWriteStatus(virtualFile, false);
         return virtualFile;

@@ -33,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
 
+
 public final class Utils {
 
     private static final Utils INSTANCE = new Utils();
@@ -44,7 +45,6 @@ public final class Utils {
     public static Utils getInstance() {
         return INSTANCE;
     }
-
     @NotNull
     public String createFileWithContents(final String displayFileName, final String contents,
                                          final String baseDir, final String digest)
@@ -68,20 +68,22 @@ public final class Utils {
     }
 
     public void forceWrite(final String contents, final File file) throws IOException {
-        FileOutputStream s = new FileOutputStream(file.getAbsolutePath(), false);
-        s.write(contents.getBytes());
-        FileChannel c = s.getChannel();
-        c.force(true);
-        s.getFD().sync();
-        c.close();
-        s.close();
+        try (FileOutputStream s = new FileOutputStream(file.getAbsolutePath(), false)) {
+            s.write(contents.getBytes(StandardCharsets.UTF_8.name()));
+            FileChannel c = s.getChannel();
+            c.force(true);
+            s.getFD().sync();
+            c.close();
+            s.close();
+        }
     }
 
     @NotNull
     public String readStreamFully(final InputStream stream) {
         StringBuilder legalNoticeMessage = new StringBuilder();
         try (BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(stream, ESUtils.UTF_8))) {
+                     new BufferedReader(new InputStreamReader(stream,
+                             StandardCharsets.UTF_8.name()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 legalNoticeMessage.append(line);

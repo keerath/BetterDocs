@@ -30,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,6 @@ public class ESUtils {
     private static final String REPOSITORY_SEARCH = "/repository/_search?source=";
     private static final String FAILED_HTTP_ERROR = "Connection Error: ";
     private static final String USER_AGENT = "USER-AGENT";
-    public static final String UTF_8 = "UTF-8";
     private static final int HTTP_OK_STATUS = 200;
     private static final String REPO_ID = "repoId";
     private static final String STARGAZERS_COUNT = "stargazersCount";
@@ -144,7 +144,7 @@ public class ESUtils {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             HttpClient httpClient = new DefaultHttpClient();
-            String encodedJson = URLEncoder.encode(esQueryJson, UTF_8);
+            String encodedJson = URLEncoder.encode(esQueryJson, StandardCharsets.UTF_8.name());
             StringBuilder esGetURL = new StringBuilder(url).append(encodedJson).append(UID);
             Settings currentSettings = new Settings();
             HttpGet getRequest;
@@ -168,13 +168,16 @@ public class ESUtils {
             }
 
             BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader((response.getEntity().getContent()), UTF_8));
+                    new InputStreamReader((response.getEntity().getContent()),
+                            StandardCharsets.UTF_8.name()));
             String output;
             while ((output = bufferedReader.readLine()) != null) {
                 stringBuilder.append(output);
             }
             bufferedReader.close();
             httpClient.getConnectionManager().shutdown();
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             return handleHttpException(e);
         }
