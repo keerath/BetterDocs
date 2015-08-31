@@ -54,6 +54,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -62,7 +63,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -247,26 +247,12 @@ public class EditorDocOps {
         final String digest = Utils.getInstance().getDigestAsString(trimmedFileName);
         final String fullFilePath = Utils.getInstance()
                 .createFileWithContents(displayFileName, contents, tempDir, digest);
-        return getVirtualFile(fullFilePath, displayFileName, contents, tempDir);
-    }
-
-    private VirtualFile getVirtualFile(final String filePath, final String displayFileName,
-                                             final String contents, final String baseDir)
-            throws IOException {
-
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
+        // Refreshing File System is required so that it is aware of newly created files
+        final VirtualFile virtualFile = LocalFileSystem.getInstance()
+                .refreshAndFindFileByIoFile(new File(fullFilePath));
         if (virtualFile == null) {
-            // This happens when intellij is confused about the existence of the file.
-            // Essentially it thinks the file was deleted, but we restored it.
-            // Unfortunately, it can not infer the fact that it was restored again.
-            String digest = UUID.randomUUID().toString().substring(0, 10);
-            final String fullFilePath = Utils.getInstance()
-                            .createFileWithContents(displayFileName, contents, baseDir, digest);
-            virtualFile = LocalFileSystem.getInstance().findFileByPath(fullFilePath);
-            if (virtualFile == null) {
-                throw new IllegalArgumentException("Virtual file should not be null."
-                        + " Can be an issue with FileSystem.");
-            }
+            throw new IllegalArgumentException("Virtual file should not be null."
+                    + " Can be an issue with FileSystem.");
         }
         windowEditorOps.setWriteStatus(virtualFile, false);
         return virtualFile;
