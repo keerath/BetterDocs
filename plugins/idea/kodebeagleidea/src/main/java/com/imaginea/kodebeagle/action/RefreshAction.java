@@ -358,12 +358,15 @@ public class RefreshAction extends AnAction {
 
                 String notificationTitle = String.format(FORMAT, QUERIED,
                         windowObjects.getEsURL(), FOR);
-                String notificationContent = " "
-                        + getResultNotificationMessage(esUtils.getResultCount(),
-                                esUtils.getTotalHitsCount(), timeToFetchResults);
-                notification = KBNotification.getInstance()
-                        .notifyBalloon(notificationTitle + notificationContent,
-                                NotificationType.INFORMATION);
+                int resultCount = esUtils.getResultCount();
+                if (resultCount > 0) {
+                    String notificationContent = " "
+                            + getResultNotificationMessage(resultCount,
+                            esUtils.getTotalHitsCount(), timeToFetchResults);
+                    notification = KBNotification.getInstance()
+                            .notifyBalloon(notificationTitle + notificationContent,
+                                    NotificationType.INFORMATION);
+                }
             } catch (RuntimeException rte) {
                 KBNotification.getInstance().error(rte);
                 rte.printStackTrace();
