@@ -44,7 +44,7 @@ public class WindowEditorOps {
         } .execute();
     }
 
-    protected final void setWriteStatus(final VirtualFile virtualFile, final boolean status) {
+    public final void setWriteStatus(final VirtualFile virtualFile, final boolean status) {
         new WriteCommandAction(windowObjects.getProject()) {
             @Override
             protected void run(@NotNull final Result result) throws Throwable {

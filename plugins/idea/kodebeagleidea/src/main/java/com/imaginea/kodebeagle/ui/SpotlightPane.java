@@ -30,10 +30,9 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-
+import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -67,15 +66,13 @@ public class SpotlightPane {
 
     public final void buildSpotlightPane(final List<CodeInfo> spotlightPaneTinyEditors) {
         JPanel spotlightPaneTinyEditorsJPanel = windowObjects.getSpotlightPaneTinyEditorsJPanel();
-
         sortSpotlightPaneTinyEditorsInfoList(spotlightPaneTinyEditors);
-
+        Map<String, String> fileNameVsContent = windowObjects.getFileNameContentsMap();
         for (CodeInfo spotlightPaneTinyEditorInfo : spotlightPaneTinyEditors) {
             String fileName = spotlightPaneTinyEditorInfo.getAbsoluteFileName();
-            String fileContents = esUtils.getContentsForFile(fileName);
+            String fileContent = fileNameVsContent.get(fileName);
             List<Integer> lineNumbers = spotlightPaneTinyEditorInfo.getLineNumbers();
-
-            String contentsInLines = editorDocOps.getContentsInLines(fileContents, lineNumbers);
+            String contentsInLines = editorDocOps.getContentsInLines(fileContent, lineNumbers);
             createSpotlightPaneTinyEditor(spotlightPaneTinyEditorsJPanel,
                     spotlightPaneTinyEditorInfo.getDisplayFileName(),
                     spotlightPaneTinyEditorInfo.getAbsoluteFileName(), contentsInLines);
@@ -88,20 +85,19 @@ public class SpotlightPane {
         Document tinyEditorDoc =
                 EditorFactory.getInstance().createDocument(contents);
         tinyEditorDoc.setReadOnly(true);
-        Project project = windowObjects.getProject();
         FileType fileType =
                 FileTypeManager.getInstance().getFileTypeByExtension(MainWindow.JAVA);
 
         Editor tinyEditor =
                 EditorFactory.getInstance().
-                        createEditor(tinyEditorDoc, project, fileType, false);
+                        createEditor(tinyEditorDoc, windowObjects.getProject(), fileType, false);
         tinyEditor.getContentComponent().addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(final MouseWheelEvent e) {
                 spotlightPaneTinyEditorJPanel.dispatchEvent(e);
             }
         });
-        windowEditorOps.releaseEditor(project, tinyEditor);
+        windowEditorOps.releaseEditor(windowObjects.getProject(), tinyEditor);
 
         JPanel expandPanel = new JPanel(wrapLayout);
 
@@ -110,7 +106,7 @@ public class SpotlightPane {
         int repoId = windowObjects.getRepoNameIdMap().get(projectName);
         String stars;
         if (windowObjects.getRepoStarsMap().containsKey(projectName)) {
-            stars = windowObjects.getRepoStarsMap().get(projectName).toString();
+            stars = windowObjects.getRepoStarsMap().get(projectName);
         } else {
             String repoStarsJson = jsonUtils.getRepoStarsJSON(repoId);
             stars = esUtils.getRepoStars(repoStarsJson);
@@ -121,9 +117,7 @@ public class SpotlightPane {
                 new JLabel(String.format(BANNER_FORMAT, HTML_U, displayFileName, END_U_HTML));
         expandLabel.setForeground(JBColor.BLACK);
         expandLabel.addMouseListener(
-                new SpotlightPaneTinyEditorExpandLabelMouseListener(displayFileName,
-                        fileName,
-                        expandLabel));
+                new SpotlightPaneTinyEditorExpandLabelMouseListener(fileName, expandLabel));
         expandPanel.add(expandLabel);
 
         final JLabel projectNameLabel =
@@ -175,14 +169,11 @@ public class SpotlightPane {
     }
 
     private class SpotlightPaneTinyEditorExpandLabelMouseListener extends MouseAdapter {
-        private final String displayFileName;
         private final String fileName;
         private final JLabel expandLabel;
 
-        public SpotlightPaneTinyEditorExpandLabelMouseListener(final String pDisplayFileName,
-                                                          final String pFileName,
+        public SpotlightPaneTinyEditorExpandLabelMouseListener(final String pFileName,
                                                           final JLabel pExpandLabel) {
-            this.displayFileName = pDisplayFileName;
             this.fileName = pFileName;
             this.expandLabel = pExpandLabel;
         }
@@ -190,10 +181,11 @@ public class SpotlightPane {
         @Override
         public void mouseClicked(final MouseEvent e) {
             try {
-                VirtualFile virtualFile = editorDocOps.getVirtualFile(fileName, displayFileName,
-                        windowObjects.getFileNameContentsMap().get(fileName));
-                FileEditorManager.getInstance(windowObjects.getProject()).
-                        openFile(virtualFile, true, true);
+                final VirtualFile virtualFile = editorDocOps.getVirtualFile(fileName);
+                if (virtualFile != null) {
+                    FileEditorManager.getInstance(windowObjects.getProject()).
+                            openFile(virtualFile, true, true);
+                }
                 Document document =
                         EditorFactory.getInstance().createDocument(windowObjects.
                                 getFileNameContentsMap().get(fileName));

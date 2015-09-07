@@ -188,10 +188,11 @@ public class ProjectTree {
             public void actionPerformed(final ActionEvent actionEvent) {
                 try {
                     VirtualFile virtualFile =
-                            editorDocOps.getVirtualFile(codeInfo.getAbsoluteFileName(),
-                                    codeInfo.getDisplayFileName(), codeInfo.getContents());
-                    FileEditorManager.getInstance(windowObjects.getProject()).
-                            openFile(virtualFile, true, true);
+                            editorDocOps.getVirtualFile(codeInfo.getAbsoluteFileName());
+                    if (virtualFile != null) {
+                        FileEditorManager.getInstance(windowObjects.getProject()).
+                                openFile(virtualFile, true, true);
+                    }
                     Document document =
                             EditorFactory.getInstance().
                                     createDocument(codeInfo.getContents());
