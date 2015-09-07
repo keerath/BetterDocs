@@ -31,7 +31,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,18 +86,6 @@ public class ESUtils {
             String fileName = sourceObject.getAsJsonPrimitive(FILE_NAME).getAsString();
             windowObjects.getFileNameContentsMap().put(fileName, fileContent);
         }
-    }
-
-    public final String getContentsForFile(final String fileName) {
-        Map<String, String> fileNameContentsMap =
-                windowObjects.getFileNameContentsMap();
-
-        if (!fileNameContentsMap.containsKey(fileName)) {
-            fetchContentsAndUpdateMap(Arrays.asList(fileName));
-        }
-        String fileContent = fileNameContentsMap.get(fileName);
-
-        return fileContent;
     }
 
     public final Map<String, String> getFileTokens(final String esResultJson) {

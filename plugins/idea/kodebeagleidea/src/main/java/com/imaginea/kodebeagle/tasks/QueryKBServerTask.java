@@ -17,6 +17,7 @@
 
 package com.imaginea.kodebeagle.tasks;
 
+import com.google.common.collect.Lists;
 import com.imaginea.kodebeagle.model.CodeInfo;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import com.imaginea.kodebeagle.ui.KBNotification;
@@ -25,16 +26,17 @@ import com.imaginea.kodebeagle.ui.SpotlightPane;
 import com.imaginea.kodebeagle.util.ESUtils;
 import com.imaginea.kodebeagle.util.JSONUtils;
 import com.imaginea.kodebeagle.util.UIUtils;
+import com.imaginea.kodebeagle.util.Utils;
 import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import java.util.Iterator;
 import org.jetbrains.annotations.NotNull;
-
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -65,7 +67,7 @@ public class QueryKBServerTask extends Task.Backgroundable {
     private static final String FETCHING_FILE_CONTENTS = "Fetching file contents...";
     public static final String KODEBEAGLE = "KodeBeagle";
     private static final double INDICATOR_FRACTION = 0.5;
-    private static final int CHUNK_SIZE = 5;
+    private static final int PARTITION_SIZE = 5;
     private static final double CONVERT_TO_SECONDS = 1000000000.0;
     private static final String RESULT_NOTIFICATION_FORMAT =
             "<br/> Showing %d of %d results (%.2f seconds)";
@@ -158,6 +160,7 @@ public class QueryKBServerTask extends Task.Backgroundable {
                 try {
                     doFrontEndWork();
                     uiUtils.goToSpotlightPane();
+                    doCachingWork();
                 } catch (RuntimeException rte) {
                     KBNotification.getInstance().error(rte);
                     rte.printStackTrace();
@@ -179,6 +182,11 @@ public class QueryKBServerTask extends Task.Backgroundable {
         }
     }
 
+    private void doCachingWork() {
+        ProgressManager.getInstance().run(new CachingTask(windowObjects.getProject(),
+                windowObjects.getFileNameContentsMap()));
+    }
+
     private void doBackEndWork(final ProgressIndicator indicator) {
         indicator.setText(FETCHING_PROJECTS);
         String esResultJson = getESQueryResultJson();
@@ -190,9 +198,9 @@ public class QueryKBServerTask extends Task.Backgroundable {
                 spotlightPaneTinyEditorsInfoList =
                         getSpotlightPaneTinyEditorsInfoList();
                 List<String> fileNamesList = getFileNamesListForTinyEditors();
-                if (fileNamesList != null) {
-                    putChunkedFileContentInMap(fileNamesList);
-                }
+                List<String> filesNotCached =
+                        Utils.getInstance().getFilesNotCached(fileNamesList);
+                putChunkedFileContentInMap(filesNotCached);
             }
         }
         indicator.setFraction(1.0);
@@ -215,13 +223,9 @@ public class QueryKBServerTask extends Task.Backgroundable {
     }
 
     private void putChunkedFileContentInMap(final List<String> fileNamesList) {
-        int head = 0;
-        int tail = CHUNK_SIZE - 1;
-        for (int i = 1; i <= (fileNamesList.size() / CHUNK_SIZE); i++) {
-            List<String> subFileNamesList = fileNamesList.subList(head, tail);
-            esUtils.fetchContentsAndUpdateMap(subFileNamesList);
-            head = tail + 1;
-            tail += CHUNK_SIZE;
+        List<List<String>> subLists = Lists.partition(fileNamesList, PARTITION_SIZE);
+        for (List<String> subList : subLists) {
+            esUtils.fetchContentsAndUpdateMap(subList);
         }
     }
 

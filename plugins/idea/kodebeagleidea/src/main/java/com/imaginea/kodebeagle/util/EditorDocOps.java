@@ -36,8 +36,6 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.roots.PackageIndex;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
@@ -55,8 +53,6 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import java.awt.Color;
 import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -73,10 +69,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class EditorDocOps {
     private static final String IMPLICIT_IMPORT = "java.lang";
-    private static final String JAVA_IO_TMP_DIR = "java.io.tmpdir";
     private static final String FILE_EXTENSION = "java";
     private WindowObjects windowObjects = WindowObjects.getInstance();
-    private WindowEditorOps windowEditorOps = new WindowEditorOps();
     private static final Color HIGHLIGHTING_COLOR =
             new JBColor(new Color(255, 250, 205), Gray._100);
     public static final char DOT = '.';
@@ -248,25 +242,14 @@ public class EditorDocOps {
         return finalImportsVsMethods;
     }
 
-    public final VirtualFile getVirtualFile(final String fileName,
-                                            final String displayFileName,
-                                            final String contents)
-            throws IOException, NoSuchAlgorithmException {
-
-        final String tempDir = System.getProperty(JAVA_IO_TMP_DIR);
-        final String trimmedFileName =
-                FileUtil.sanitizeFileName(StringUtil.trimEnd(fileName, displayFileName));
-        final String digest = Utils.getInstance().getDigestAsString(trimmedFileName);
-        final String fullFilePath = Utils.getInstance()
-                .createFileWithContents(displayFileName, contents, tempDir, digest);
-        // Refreshing File System is required so that it is aware of newly created files
-        final VirtualFile virtualFile = LocalFileSystem.getInstance()
-                .refreshAndFindFileByIoFile(new File(fullFilePath));
-        if (virtualFile == null) {
-            throw new IllegalArgumentException("Virtual file should not be null."
-                    + " Can be an issue with FileSystem.");
-        }
-        windowEditorOps.setWriteStatus(virtualFile, false);
+    public final VirtualFile getFile(final String fileName) {
+        File file = Utils.getInstance().getTempFile(fileName);
+        VirtualFile virtualFile = LocalFileSystem.getInstance()
+                    .refreshAndFindFileByIoFile(file);
+            if (virtualFile == null) {
+                throw new IllegalArgumentException("Virtual file should not be null."
+                        + " Can be an issue with FileSystem.");
+            }
         return virtualFile;
     }
 
