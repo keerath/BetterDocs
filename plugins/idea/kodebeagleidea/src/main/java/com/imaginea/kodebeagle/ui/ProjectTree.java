@@ -32,10 +32,15 @@ import com.intellij.openapi.vfs.VirtualFile;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -165,6 +170,40 @@ public class ProjectTree {
 
                     menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
                 }
+                doubleClickListener(mouseEvent);
+            }
+        };
+    }
+
+    private void doubleClickListener(final MouseEvent mouseEvent) {
+        if (mouseEvent.getClickCount() == 2) {
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)
+                    windowObjects.getjTree().getLastSelectedPathComponent();
+            if (selectedNode.isLeaf()) {
+                CodeInfo codeInfo = (CodeInfo) selectedNode.getUserObject();
+                showEditor(codeInfo);
+            }
+        }
+    }
+
+    public final KeyListener getKeyListener() {
+        return new KeyAdapter() {
+            @Override
+            public void keyTyped(final KeyEvent keyEvent) {
+                super.keyTyped(keyEvent);
+                if (keyEvent.getKeyChar() == KeyEvent.VK_ENTER) {
+                    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)
+                            windowObjects.getjTree().getLastSelectedPathComponent();
+                    if (selectedNode.isLeaf()) {
+                        final CodeInfo codeInfo = (CodeInfo) selectedNode.getUserObject();
+                        try {
+                            showEditor(codeInfo);
+                        } catch (Exception e) {
+                            KBNotification.getInstance().error(e);
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
         };
     }
@@ -180,6 +219,27 @@ public class ProjectTree {
             url = codeInfo.getAbsoluteFileName();
         }
         return url;
+    }
+
+    private void showEditor(final CodeInfo codeInfo) {
+        VirtualFile virtualFile =
+                null;
+        try {
+            virtualFile = editorDocOps.getVirtualFile(codeInfo.getAbsoluteFileName(),
+                    codeInfo.getDisplayFileName(), codeInfo.getContents());
+        } catch (IOException | NoSuchAlgorithmException e) {
+            KBNotification.getInstance().error(e);
+            e.printStackTrace();
+        }
+        if (virtualFile != null) {
+            FileEditorManager.getInstance(windowObjects.getProject()).
+                    openFile(virtualFile, true, true);
+        }
+        Document document =
+                EditorFactory.getInstance().
+                        createDocument(codeInfo.getContents());
+        editorDocOps.addHighlighting(codeInfo.getLineNumbers(), document);
+        editorDocOps.gotoLine(codeInfo.getLineNumbers().get(0), document);
     }
 
     private AbstractAction addOpenInNewTabMenuItem(final CodeInfo codeInfo) {

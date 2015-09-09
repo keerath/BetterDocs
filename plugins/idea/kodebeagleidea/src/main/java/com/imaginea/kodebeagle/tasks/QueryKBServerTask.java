@@ -211,6 +211,7 @@ public class QueryKBServerTask extends Task.Backgroundable {
         ToolTipManager.sharedInstance().registerComponent(jTree);
         jTree.setCellRenderer(projectTree.getJTreeCellRenderer());
         jTree.addMouseListener(projectTree.getMouseListener(root));
+        jTree.addKeyListener(projectTree.getKeyListener());
         windowObjects.getjTreeScrollPane().setViewportView(jTree);
     }
 
