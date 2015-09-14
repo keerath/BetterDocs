@@ -76,16 +76,18 @@ public class ESUtils {
         String esFileResultJson;
         esFileResultJson = getESResultJson(esFileQueryJson,
                 windowObjects.getEsURL() + SOURCEFILE_SEARCH);
-        JsonArray hitsArray = getJsonHitsArray(getJsonElements(esFileResultJson));
-
-        for (JsonElement hits : hitsArray) {
-            JsonObject hitObject = hits.getAsJsonObject();
-            JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
-            //Replacing \r as it's treated as bad end of line character
-            String fileContent = sourceObject.getAsJsonPrimitive(FILE_CONTENT).
-                    getAsString().replaceAll("\r", "");
-            String fileName = sourceObject.getAsJsonPrimitive(FILE_NAME).getAsString();
-            windowObjects.getFileNameContentsMap().put(fileName, fileContent);
+        JsonObject jsonElements = getJsonElements(esFileResultJson);
+        if (jsonElements != null) {
+            JsonArray hitsArray = getJsonHitsArray(jsonElements);
+            for (JsonElement hits : hitsArray) {
+                JsonObject hitObject = hits.getAsJsonObject();
+                JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
+                //Replacing \r as it's treated as bad end of line character
+                String fileContent = sourceObject.getAsJsonPrimitive(FILE_CONTENT).
+                        getAsString().replaceAll("\r", "");
+                String fileName = sourceObject.getAsJsonPrimitive(FILE_NAME).getAsString();
+                windowObjects.getFileNameContentsMap().put(fileName, fileContent);
+            }
         }
     }
 
@@ -104,22 +106,23 @@ public class ESUtils {
     public final Map<String, String> getFileTokens(final String esResultJson) {
         Map<String, String> fileTokenMap = new HashMap<String, String>();
         final JsonObject hitsObject = getJsonElements(esResultJson);
-        JsonArray hitsArray = getJsonHitsArray(hitsObject);
-        resultCount = hitsArray.size();
-        totalHitsCount = getTotalHits(hitsObject);
-        for (JsonElement hits : hitsArray) {
-            JsonObject hitObject = hits.getAsJsonObject();
-            JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
-            String fileName = sourceObject.getAsJsonPrimitive(FILE).getAsString();
-            //Extracting repoIds for future use
-            int repoId = sourceObject.getAsJsonPrimitive(REPO_ID).getAsInt();
-            String project = getProjectName(fileName);
-            if (!windowObjects.getRepoNameIdMap().containsKey(project)) {
-                windowObjects.getRepoNameIdMap().put(project, repoId);
+        if (hitsObject != null) {
+            JsonArray hitsArray = getJsonHitsArray(hitsObject);
+            resultCount = hitsArray.size();
+            totalHitsCount = getTotalHits(hitsObject);
+            for (JsonElement hits : hitsArray) {
+                JsonObject hitObject = hits.getAsJsonObject();
+                JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
+                String fileName = sourceObject.getAsJsonPrimitive(FILE).getAsString();
+                //Extracting repoIds for future use
+                int repoId = sourceObject.getAsJsonPrimitive(REPO_ID).getAsInt();
+                String project = getProjectName(fileName);
+                if (!windowObjects.getRepoNameIdMap().containsKey(project)) {
+                    windowObjects.getRepoNameIdMap().put(project, repoId);
+                }
+                String tokens = sourceObject.get(TOKENS).toString();
+                fileTokenMap.put(fileName, tokens);
             }
-
-            String tokens = sourceObject.get(TOKENS).toString();
-            fileTokenMap.put(fileName, tokens);
         }
         return fileTokenMap;
     }
@@ -128,7 +131,11 @@ public class ESUtils {
         JsonReader reader = new JsonReader(new StringReader(esResultJson));
         reader.setLenient(true);
         JsonElement jsonElement = new JsonParser().parse(reader);
-        return jsonElement.getAsJsonObject().getAsJsonObject(HITS);
+        if (jsonElement.isJsonObject()) {
+            return jsonElement.getAsJsonObject().getAsJsonObject(HITS);
+        } else {
+            return null;
+        }
     }
 
     private Long getTotalHits(final JsonObject hitsObject) {
@@ -195,12 +202,14 @@ public class ESUtils {
         String stars = null;
         repoStarResultJson = getESResultJson(repoStarsJson,
                 windowObjects.getEsURL() + REPOSITORY_SEARCH);
-        JsonArray hitsArray = getJsonHitsArray(getJsonElements(repoStarResultJson));
-
-        JsonObject hitObject = hitsArray.get(0).getAsJsonObject();
-        JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
-        //Replacing \r as it's treated as bad end of line character
-        stars = sourceObject.getAsJsonPrimitive(STARGAZERS_COUNT).getAsString();
+        JsonObject jsonElements = getJsonElements(repoStarResultJson);
+        if (jsonElements != null) {
+            JsonArray hitsArray = getJsonHitsArray(jsonElements);
+            JsonObject hitObject = hitsArray.get(0).getAsJsonObject();
+            JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
+            //Replacing \r as it's treated as bad end of line character
+            stars = sourceObject.getAsJsonPrimitive(STARGAZERS_COUNT).getAsString();
+        }
         return stars;
     }
 
@@ -218,7 +227,9 @@ public class ESUtils {
         } else {
             String repoStarsJson = jsonUtils.getRepoStarsJSON(repoId);
             stars = getRepoStars(repoStarsJson);
-            windowObjects.getRepoStarsMap().put(repoName, stars);
+            if (stars != null) {
+                windowObjects.getRepoStarsMap().put(repoName, stars);
+            }
         }
         return stars;
     }

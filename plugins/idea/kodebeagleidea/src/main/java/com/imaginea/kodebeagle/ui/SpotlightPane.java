@@ -112,7 +112,9 @@ public class SpotlightPane {
         } else {
             String repoStarsJson = jsonUtils.getRepoStarsJSON(repoId);
             stars = esUtils.getRepoStars(repoStarsJson);
-            windowObjects.getRepoStarsMap().put(projectName, stars);
+            if (stars != null) {
+                windowObjects.getRepoStarsMap().put(projectName, stars);
+            }
         }
 
         final JLabel expandLabel =

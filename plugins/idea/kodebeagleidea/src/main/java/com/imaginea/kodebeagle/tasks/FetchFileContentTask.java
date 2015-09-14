@@ -67,8 +67,10 @@ public class FetchFileContentTask extends Task.Backgroundable {
     private void updateMainPanePreviewEditor(final List<Integer> lineNumbers) {
         final Document mainPanePreviewEditorDocument =
                 windowObjects.getWindowEditor().getDocument();
-        String contentsInLines =
-                editorDocOps.getContentsInLines(fileContents, lineNumbers);
-        windowEditorOps.writeToDocument(contentsInLines, mainPanePreviewEditorDocument);
+        if (fileContents != null) {
+            String contentsInLines =
+                    editorDocOps.getContentsInLines(fileContents, lineNumbers);
+            windowEditorOps.writeToDocument(contentsInLines, mainPanePreviewEditorDocument);
+        }
     }
 }
