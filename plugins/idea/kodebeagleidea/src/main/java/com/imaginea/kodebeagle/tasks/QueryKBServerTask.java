@@ -17,6 +17,7 @@
 
 package com.imaginea.kodebeagle.tasks;
 
+import com.google.common.collect.Lists;
 import com.imaginea.kodebeagle.model.CodeInfo;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import com.imaginea.kodebeagle.ui.KBNotification;
@@ -216,13 +217,9 @@ public class QueryKBServerTask extends Task.Backgroundable {
     }
 
     private void putChunkedFileContentInMap(final List<String> fileNamesList) {
-        int head = 0;
-        int tail = CHUNK_SIZE - 1;
-        for (int i = 1; i <= (fileNamesList.size() / CHUNK_SIZE); i++) {
-            List<String> subFileNamesList = fileNamesList.subList(head, tail);
-            esUtils.fetchContentsAndUpdateMap(subFileNamesList);
-            head = tail + 1;
-            tail += CHUNK_SIZE;
+        List<List<String>> subLists = Lists.partition(fileNamesList, CHUNK_SIZE);
+        for (List<String> subList : subLists) {
+            esUtils.fetchContentsAndUpdateMap(subList);
         }
     }
 

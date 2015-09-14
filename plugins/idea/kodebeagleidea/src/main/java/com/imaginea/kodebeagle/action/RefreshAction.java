@@ -59,7 +59,8 @@ public class RefreshAction extends AnAction {
     public static final String ES_URL_DEFAULT = "http://labs.imaginea.com/kodebeagle";
     public static final int LINES_FROM_CURSOR_DEFAULT_VALUE = 0;
     public static final int SIZE_DEFAULT_VALUE = 30;
-    public static final String EDITOR_ERROR = "Could not get any active editor";
+    public static final String EDITOR_ERROR =
+            "<html><center>Could not get any active editor</center></html>";
     public static final String EXCLUDE_IMPORT_PATTERN = "Exclude imports pattern";
     public static final String EXCLUDE_IMPORT_CHECKBOX_VALUE = "Exclude imports checkbox value";
     public static final String EXCLUDE_IMPORT_DEFAULT_CHECKBOX_VALUE = "false";
