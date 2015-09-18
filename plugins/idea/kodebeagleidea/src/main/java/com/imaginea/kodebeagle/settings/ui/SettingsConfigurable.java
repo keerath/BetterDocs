@@ -24,6 +24,8 @@ import com.imaginea.kodebeagle.model.Limits;
 import com.imaginea.kodebeagle.model.Notifications;
 import com.imaginea.kodebeagle.model.Settings;
 import com.imaginea.kodebeagle.model.SettingsBuilder;
+import com.imaginea.kodebeagle.util.UIUtils;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.ui.ComboBox;
 import java.util.ArrayList;
@@ -37,6 +39,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class SettingsConfigurable implements Configurable {
     public static final String KODE_BEAGLE_SETTINGS = "KodeBeagle Settings";
+    public static final String HELP =
+            "https://github.com/Imaginea/KodeBeagle/tree/master/resources/Help.md";
     private SettingsPanel settingsPanel = new SettingsPanel();
     private JLabel beagleIdValue;
     private ComboBox esURLComboBox;
@@ -130,6 +134,7 @@ public class SettingsConfigurable implements Configurable {
     @Nullable
     @Override
     public final String getHelpTopic() {
+        BrowserUtil.browse(HELP);
         return null;
     }
 }

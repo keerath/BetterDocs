@@ -82,11 +82,12 @@ public class ESUtils {
             for (JsonElement hits : hitsArray) {
                 JsonObject hitObject = hits.getAsJsonObject();
                 JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
-                //Replacing \r as it's treated as bad end of line character
-                String fileContent = sourceObject.getAsJsonPrimitive(FILE_CONTENT).
-                        getAsString().replaceAll("\r", "");
+                String fileContent = sourceObject.getAsJsonPrimitive(FILE_CONTENT).getAsString();
                 String fileName = sourceObject.getAsJsonPrimitive(FILE_NAME).getAsString();
-                windowObjects.getFileNameContentsMap().put(fileName, fileContent);
+                if (fileName != null && fileContent != null) {
+                    //Replacing \r as it's treated as bad end of line character
+                    windowObjects.getFileNameContentsMap().put(fileName, fileContent.replaceAll("\r", ""));
+                }
             }
         }
     }

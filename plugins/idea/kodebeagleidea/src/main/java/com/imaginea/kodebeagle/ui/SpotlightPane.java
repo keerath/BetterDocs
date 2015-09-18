@@ -72,19 +72,20 @@ public class SpotlightPane {
 
         for (CodeInfo spotlightPaneTinyEditorInfo : spotlightPaneTinyEditors) {
             String fileName = spotlightPaneTinyEditorInfo.getAbsoluteFileName();
-            String fileContents = esUtils.getContentsForFile(fileName);
-            List<Integer> lineNumbers = spotlightPaneTinyEditorInfo.getLineNumbers();
-
-            String contentsInLines = editorDocOps.getContentsInLines(fileContents, lineNumbers);
-            createSpotlightPaneTinyEditor(spotlightPaneTinyEditorsJPanel,
-                    spotlightPaneTinyEditorInfo.getDisplayFileName(),
-                    spotlightPaneTinyEditorInfo.getAbsoluteFileName(), contentsInLines);
+            if (windowObjects.getFileNameContentsMap().containsKey(fileName)) {
+                String fileContents = windowObjects.getFileNameContentsMap().get(fileName);
+                List<Integer> lineNumbers = spotlightPaneTinyEditorInfo.getLineNumbers();
+                String contentsInLines = editorDocOps.getContentsInLines(fileContents, lineNumbers);
+                createSpotlightPaneTinyEditor(spotlightPaneTinyEditorsJPanel,
+                        spotlightPaneTinyEditorInfo.getDisplayFileName(),
+                        spotlightPaneTinyEditorInfo.getAbsoluteFileName(), contentsInLines);
+            }
         }
     }
 
     private void createSpotlightPaneTinyEditor(final JPanel spotlightPaneTinyEditorJPanel,
-                                          final String displayFileName, final String fileName,
-                                          final String contents) {
+                                               final String displayFileName, final String fileName,
+                                               final String contents) {
         Document tinyEditorDoc = new DocumentImpl(contents, true, false);
         tinyEditorDoc.setReadOnly(true);
         FileType fileType =
@@ -180,8 +181,8 @@ public class SpotlightPane {
         private final JLabel expandLabel;
 
         public SpotlightPaneTinyEditorExpandLabelMouseListener(final String pDisplayFileName,
-                                                          final String pFileName,
-                                                          final JLabel pExpandLabel) {
+                                                               final String pFileName,
+                                                               final JLabel pExpandLabel) {
             this.displayFileName = pDisplayFileName;
             this.fileName = pFileName;
             this.expandLabel = pExpandLabel;
