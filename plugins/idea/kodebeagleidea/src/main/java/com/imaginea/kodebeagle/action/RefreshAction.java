@@ -83,7 +83,7 @@ public class RefreshAction extends AnAction {
     private static final String FILETYPE_HELP = "<html><center>Currently KodeBeagle supports "
             + "\"java\" files only.</center></html>";
     public static final String KODEBEAGLE = "KodeBeagle";
-    public static final int TOP_COUNT_DEFAULT_VALUE = 10;
+    public static final int TOP_COUNT_DEFAULT_VALUE = 5;
     public static final String TOP_COUNT = "Top count";
     private static final String PROJECT_ERROR = "Unable to get Project. Please Try again";
     public static final String OPT_OUT_CHECKBOX_VALUE = "Opt out checkbox value";

@@ -25,7 +25,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.imaginea.kodebeagle.model.ESFileContent;
 import com.imaginea.kodebeagle.model.ESQuery;
-import com.imaginea.kodebeagle.model.RepoStarsJSON;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,8 +43,6 @@ public class JSONUtils {
     private static final String CACHE = "cache";
     private static final String FILTER_CACHE = "_cache";
     private static final String SORT_ORDER = "desc";
-    private static final String ID = "id";
-    private static final String TYPEREPOSITORY_ID = "typerepository.id";
     private static final String TYPESOURCEFILENAME_FILENAME = "typesourcefile.fileName";
     private static final String FILE_NAME = "fileName";
     private static final String LINE_NUMBER = "lineNumber";
@@ -70,38 +67,6 @@ public class JSONUtils {
         Gson gson = new Gson();
         return gson.toJson(esFileContent).replaceAll(FILE_NAME, TYPESOURCEFILENAME_FILENAME);
     }
-
-    public final String getRepoStarsJSON(final int repoId) {
-        RepoStarsJSON repoStarsJSON = new RepoStarsJSON();
-        RepoStarsJSON.Query query = new RepoStarsJSON.Query();
-        repoStarsJSON.setQuery(query);
-        repoStarsJSON.setFrom(0);
-        repoStarsJSON.setSize(1);
-
-        List<RepoStarsJSON.Sort> sortList = new ArrayList<RepoStarsJSON.Sort>();
-        repoStarsJSON.setSort(sortList);
-
-        RepoStarsJSON.Facets facets = new RepoStarsJSON.Facets();
-        repoStarsJSON.setFacets(facets);
-
-        RepoStarsJSON.Bool bool = new RepoStarsJSON.Bool();
-        query.setBool(bool);
-
-        List<RepoStarsJSON.Must> mustList = new ArrayList<RepoStarsJSON.Must>();
-
-        RepoStarsJSON.Must must = new RepoStarsJSON.Must();
-        bool.setMust(mustList);
-        bool.setMustNot(new ArrayList<RepoStarsJSON.Must>());
-        bool.setShould(new ArrayList<RepoStarsJSON.Must>());
-        RepoStarsJSON.Term term = new RepoStarsJSON.Term();
-        must.setTerm(term);
-        term.setId(repoId);
-        mustList.add(must);
-
-        Gson gson = new Gson();
-        return gson.toJson(repoStarsJSON).replaceAll(ID, TYPEREPOSITORY_ID);
-    }
-
 
     private ESQuery getFilteredQuery(final int size) {
         ESQuery esQuery = new ESQuery();

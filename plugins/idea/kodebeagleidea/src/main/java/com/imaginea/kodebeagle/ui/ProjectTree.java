@@ -262,7 +262,6 @@ public class ProjectTree {
 class JTreeCellRenderer implements TreeCellRenderer {
     private static final String REPO_STARS = "Repo Stars: ";
     private WindowObjects windowObjects = WindowObjects.getInstance();
-    private ESUtils esUtils = new ESUtils();
     private ProjectTree projectTree = new ProjectTree();
     private DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 
@@ -276,8 +275,7 @@ class JTreeCellRenderer implements TreeCellRenderer {
                 if (!((DefaultMutableTreeNode) value).isLeaf()
                         && !((DefaultMutableTreeNode) value).isRoot()) {
                     String repoName = ((DefaultMutableTreeNode) value).getUserObject().toString();
-                    int repoId = windowObjects.getRepoNameIdMap().get(repoName);
-                    String stars = esUtils.extractRepoStars(repoName, repoId);
+                    String stars = windowObjects.getRepoStarsMap().get(repoName);
                     renderer.setToolTipText(REPO_STARS + stars);
                     renderer.setIcon(new ImageIcon(projectTree.getIconURL()));
                 } else {

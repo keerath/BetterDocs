@@ -21,7 +21,6 @@ import com.imaginea.kodebeagle.model.CodeInfo;
 import com.imaginea.kodebeagle.object.WindowObjects;
 import com.imaginea.kodebeagle.util.ESUtils;
 import com.imaginea.kodebeagle.util.EditorDocOps;
-import com.imaginea.kodebeagle.util.JSONUtils;
 import com.imaginea.kodebeagle.util.WindowEditorOps;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.editor.Document;
@@ -62,7 +61,6 @@ public class SpotlightPane {
     private WindowEditorOps windowEditorOps = new WindowEditorOps();
     private EditorDocOps editorDocOps = new EditorDocOps();
     private ESUtils esUtils = new ESUtils();
-    private JSONUtils jsonUtils = new JSONUtils();
     private final WrapLayout wrapLayout = new WrapLayout(FlowLayout.CENTER, HGAP, VGAP);
 
     public final void buildSpotlightPane(final List<CodeInfo> spotlightPaneTinyEditors) {
@@ -104,19 +102,6 @@ public class SpotlightPane {
         JPanel expandPanel = new JPanel(wrapLayout);
 
         final String projectName = esUtils.getProjectName(fileName);
-
-        int repoId = windowObjects.getRepoNameIdMap().get(projectName);
-        String stars;
-        if (windowObjects.getRepoStarsMap().containsKey(projectName)) {
-            stars = windowObjects.getRepoStarsMap().get(projectName).toString();
-        } else {
-            String repoStarsJson = jsonUtils.getRepoStarsJSON(repoId);
-            stars = esUtils.getRepoStars(repoStarsJson);
-            if (stars != null) {
-                windowObjects.getRepoStarsMap().put(projectName, stars);
-            }
-        }
-
         final JLabel expandLabel =
                 new JLabel(String.format(BANNER_FORMAT, HTML_U, displayFileName, END_U_HTML));
         expandLabel.setForeground(JBColor.BLACK);
@@ -151,7 +136,8 @@ public class SpotlightPane {
         expandPanel.add(projectNameLabel);
         expandPanel.setMaximumSize(
                 new Dimension(Integer.MAX_VALUE, expandLabel.getMinimumSize().height));
-        expandPanel.setToolTipText(String.format(REPO_BANNER_FORMAT, REPO_SCORE, stars));
+        expandPanel.setToolTipText(String.format(REPO_BANNER_FORMAT, REPO_SCORE,
+                windowObjects.getRepoStarsMap().get(projectName)));
         expandPanel.revalidate();
         expandPanel.repaint();
 

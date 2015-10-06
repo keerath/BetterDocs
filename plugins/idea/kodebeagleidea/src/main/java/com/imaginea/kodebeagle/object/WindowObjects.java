@@ -42,7 +42,6 @@ public final class WindowObjects {
     private Map<String, String> fileNameContentsMap = new HashMap<String, String>();
     private Map<String, List<Integer>> fileNameNumbersMap = new HashMap<String, List<Integer>>();
     private Map<String, String> repoStarsMap = new HashMap<String, String>();
-    private Map<String, Integer> repoNameIdMap = new HashMap<String, Integer>();
     private String osInfo;
     private String applicationVersion;
     private String pluginVersion;
@@ -94,10 +93,6 @@ public final class WindowObjects {
     }
 
     private JBScrollPane jTreeScrollPane;
-
-    public Map<String, Integer> getRepoNameIdMap() {
-        return repoNameIdMap;
-    }
 
     public Map<String, String> getRepoStarsMap() {
         return repoStarsMap;

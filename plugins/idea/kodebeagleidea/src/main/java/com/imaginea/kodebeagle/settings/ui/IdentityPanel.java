@@ -30,7 +30,7 @@ import javax.swing.border.TitledBorder;
 @SuppressWarnings("PMD")
 public class IdentityPanel {
 
-    private static final String TITLE1 = "SettingsConfigurable";
+    private static final String TITLE1 = "Identity";
     private static final String BEAGLE_ID = "Beagle ID:";
     private static final String OPT_OUT = "Opt-Out";
     private static final String HELP_TEXT_1 = "* Beagle ID is used to anonymously track"

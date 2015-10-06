@@ -251,6 +251,7 @@ public class QueryKBServerTask extends Task.Backgroundable {
         Map<String, String> fileTokensMap = esUtils.getFileTokens(esResultJson);
         Map<String, ArrayList<CodeInfo>> pProjectNodes =
                 projectTree.updateProjectNodes(finalImports.keySet(), fileTokensMap);
+        esUtils.updateRepoStarsMap(esResultJson);
         return pProjectNodes;
     }
 

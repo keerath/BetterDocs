@@ -48,12 +48,9 @@ public class ESUtils {
     private static final String FILE = "file";
     private static final String TOKENS = "tokens";
     private static final String SOURCEFILE_SEARCH = "/sourcefile/_search?source=";
-    private static final String REPOSITORY_SEARCH = "/repository/_search?source=";
     private static final String FAILED_HTTP_ERROR = "Connection Error: ";
     private static final String USER_AGENT = "USER-AGENT";
     private static final int HTTP_OK_STATUS = 200;
-    private static final String REPO_ID = "repoId";
-    private static final String STARGAZERS_COUNT = "stargazersCount";
     private static final String FILE_NAME = "fileName";
     private static final String UID = "&uid=";
     private static final String OPTED_OUT = "opted-out";
@@ -114,12 +111,6 @@ public class ESUtils {
                 JsonObject hitObject = hits.getAsJsonObject();
                 JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
                 String fileName = sourceObject.getAsJsonPrimitive(FILE).getAsString();
-                //Extracting repoIds for future use
-                int repoId = sourceObject.getAsJsonPrimitive(REPO_ID).getAsInt();
-                String project = getProjectName(fileName);
-                if (!windowObjects.getRepoNameIdMap().containsKey(project)) {
-                    windowObjects.getRepoNameIdMap().put(project, repoId);
-                }
                 String tokens = sourceObject.get(TOKENS).toString();
                 fileTokenMap.put(fileName, tokens);
             }
@@ -197,22 +188,6 @@ public class ESUtils {
         return RefreshAction.EMPTY_ES_URL;
     }
 
-    public final String getRepoStars(final String repoStarsJson) {
-        String repoStarResultJson;
-        String stars = null;
-        repoStarResultJson = getESResultJson(repoStarsJson,
-                windowObjects.getEsURL() + REPOSITORY_SEARCH);
-        JsonObject jsonElements = getJsonElements(repoStarResultJson);
-        if (jsonElements != null) {
-            JsonArray hitsArray = getJsonHitsArray(jsonElements);
-            JsonObject hitObject = hitsArray.get(0).getAsJsonObject();
-            JsonObject sourceObject = hitObject.getAsJsonObject(SOURCE);
-            //Replacing \r as it's treated as bad end of line character
-            stars = sourceObject.getAsJsonPrimitive(STARGAZERS_COUNT).getAsString();
-        }
-        return stars;
-    }
-
     public final String getProjectName(final String fileName) {
         //Project name is till 2nd '/'
         int startIndex = fileName.indexOf('/');
@@ -220,18 +195,16 @@ public class ESUtils {
         return fileName.substring(0, endIndex);
     }
 
-    public final String extractRepoStars(final String repoName, final int repoId) {
-        String stars;
-        if (windowObjects.getRepoStarsMap().containsKey(repoName)) {
-            stars = windowObjects.getRepoStarsMap().get(repoName).toString();
-        } else {
-            String repoStarsJson = jsonUtils.getRepoStarsJSON(repoId);
-            stars = getRepoStars(repoStarsJson);
-            if (stars != null) {
-                windowObjects.getRepoStarsMap().put(repoName, stars);
+    public final void updateRepoStarsMap(final String esResultJson) {
+        JsonArray hitsArray = getJsonHitsArray(getJsonElements(esResultJson));
+        for (JsonElement hit : hitsArray) {
+            JsonObject sourceObject = hit.getAsJsonObject().getAsJsonObject(SOURCE);
+            if (sourceObject != null) {
+                String repoName = getProjectName(sourceObject.get("file").getAsString());
+                String score = sourceObject.get("score").getAsString();
+                windowObjects.getRepoStarsMap().put(repoName, score);
             }
         }
-        return stars;
     }
-
 }
+
