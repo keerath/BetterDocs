@@ -57,6 +57,7 @@ import java.util.List;
 public class PatternFilterEditor extends JPanel implements ComponentWithEmptyText {
     private static final int WIDTH = 200;
     private static final int PREFERRED_SCROLLABLE_VIEWPORT_HEIGHT_IN_ROWS = 7;
+    public static final String EMPTY_PATTERNS = "No import patterns configured";
     private JBTable myTable = null;
     private FilterTableModel myTableModel = null;
     private final Project myProject;
@@ -107,7 +108,7 @@ public class PatternFilterEditor extends JPanel implements ComponentWithEmptyTex
         column.setCellRenderer(new EnabledCellRenderer(myTable.getDefaultRenderer(Boolean.class)));
         columnModel.getColumn(FilterTableModel.FILTER).setCellRenderer(new FilterCellRenderer());
 
-        getEmptyText().setText(UIBundle.message("no.patterns"));
+        getEmptyText().setText(EMPTY_PATTERNS);
     }
 
     @NotNull

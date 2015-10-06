@@ -18,10 +18,14 @@
 package com.imaginea.kodebeagle.settings.ui;
 
 import com.imaginea.kodebeagle.model.Identity;
+import com.intellij.ide.BrowserUtil;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,18 +43,21 @@ public class IdentityPanel {
             + " track your search queries.";
     private static final String HELP_TEXT_3 = " (For further details refer our Privacy Policy)";
     private static final String HELP_FONT_NAME = "Sans Serif";
+    public static final String HELP =
+            "https://github.com/Imaginea/KodeBeagle/blob/master/docs/Plugin-Help.md";
     private static final int HELP_FONT_SIZE = 12;
     private static final int[] IDENTITY_PANEL_COLUMN_WIDTHS =
-            new int[] {29, 87, 126, 0, 0, 104, 0, 0, 0, 0, 0, 0, 0, 0};
+            new int[]{29, 87, 126, 0, 0, 104, 0, 0, 0, 0, 0, 0, 0, 0};
 
     private static final int[] IDENTITY_PANEL_ROW_HEIGHTS =
-            new int[] {0, 0, 0, 0, 0, 0, 0};
+            new int[]{0, 0, 0, 0, 0, 0, 0};
 
     private static final double[] IDENTITY_PANEL_COLUMN_WEIGHTS =
-            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
     private static final double[] IDENTITY_PANEL_ROW_WEIGHTS =
-            new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+    public static final String KB_HELP = "<html><a href = ''>KodeBeagle Help</a></html>";
 
     private JLabel beagleId;
     private JLabel beagleIdValue;
@@ -58,6 +65,7 @@ public class IdentityPanel {
     private JLabel optOutHelp;
     private JLabel privacyHelp;
     private JCheckBox optOut;
+    private JLabel help;
     private final JPanel spacer = new JPanel(null);
 
     private final GridBagConstraints identityPanelVerticalSpacer1 =
@@ -101,6 +109,10 @@ public class IdentityPanel {
             new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
                     GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0);
 
+    private final GridBagConstraints identityPanelFourthRight =
+            new GridBagConstraints(12, 5, 3, 1, 0.0, 0.0, GridBagConstraints.EAST,
+                    GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 1);
+
     protected IdentityPanel() {
         createFields();
     }
@@ -123,6 +135,33 @@ public class IdentityPanel {
         optOutHelp.setFont(new Font(HELP_FONT_NAME, Font.ITALIC, HELP_FONT_SIZE));
         privacyHelp = new JLabel(HELP_TEXT_3);
         privacyHelp.setFont(new Font(HELP_FONT_NAME, Font.ITALIC, HELP_FONT_SIZE));
+        help = new JLabel(KB_HELP);
+        help.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                BrowserUtil.browse(HELP);
+            }
+
+            @Override
+            public void mousePressed(final MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(final MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(final MouseEvent e) {
+                help.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(final MouseEvent e) {
+
+            }
+        });
     }
 
     public final JPanel getPanel() {
@@ -143,6 +182,7 @@ public class IdentityPanel {
         identityPanel.add(beagleIdHelp, identityPanelSecondLeft);
         identityPanel.add(optOutHelp, identityPanelThirdLeft);
         identityPanel.add(privacyHelp, identityPanelFourthLeft);
+        identityPanel.add(help, identityPanelFourthRight);
         return identityPanel;
     }
 
