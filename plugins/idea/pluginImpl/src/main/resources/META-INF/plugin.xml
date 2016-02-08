@@ -1,0 +1,81 @@
+<idea-plugin version="3">
+    <id>com.imaginea.kodebeagle.scalaplugin</id>
+    <name>KodeBeagle</name>
+    <version>VERSION_STRING</version> <!-- This gets auto updated by SBT during package -->
+
+    <vendor email="kodebeagle@googlegroups.com" url="http://imaginea.com/">Imaginea</vendor>
+
+    <description><![CDATA[
+    <strong><i>KodeBeagle</i></strong>
+<br/>
+  <p> A tool to assist you when you need code references.
+  As Developers, we tend to hunt for best-practices of using common and uncommon libraries in order to make our code
+  more efficient. Often, a lot of time and energy is spent understanding the pros and cons of different approaches.
+  KodeBeagle aims to solve this problem. It cites common practices from standard code references.
+  </p>
+<br/>
+<u>How it works ?</u>
+<br/><p>
+  KodeBeagle servers crawl through existing popular open source projects only and collects useful information
+  about them. When a user searches, it queries the kodebeagle servers by making a remote call and fetches
+  relevant results. Currently, the source for code of open source projects is Github.</p>
+
+  <p>We do not collect any personal information on our servers nor do we send user-end code on our
+  servers for processing. The processing of keywords takes place on the plugin locally. These keywords
+  are references to libraries <em>external</em> to the projects. These are send as part of the query to our
+  servers. There is a way to exclude user defined library by clicking settings icon on the plugin and
+  configuring exclude imports. Deciding which library is external and should be included in search is
+  automatic and user configurable both.</p>
+
+  <p>Furthermore, participation on improving search results based on anonymous search logging can be opted-out
+  from plugin settings. Please review our privacy policy for more details on data collection
+  <a href="http://kodebeagle.com/about/privacy-policy.html">
+  KodeBeagle privacy policy. </a>
+  </p>
+<br/>
+<p>KodeBeagle Website: <a href="http://kodebeagle.com/">KodeBeagle.com</a></p>
+<p>Technology Stack : Elasticsearch and Apache Spark</p>
+<br/>
+<p>Current Status: Beta</p>
+<br/><p>Supported Languages: Java, Scala</p>
+]]></description>
+
+    <change-notes><![CDATA[
+    See milestone for this version(VERSION_STRING) at: <a href="https://github.com/Imaginea/KodeBeagle/milestones">
+    Milestones</a> on github.
+    ]]>
+    </change-notes>
+    <depends optional="true">org.intellij.scala</depends>
+
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="139"/>
+
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <application-components>
+        <!-- Add your application components here -->
+    </application-components>
+
+    <project-components>
+        <!-- Add your project components here -->
+    </project-components>
+    <actions>
+        <!-- <action id="KodeBeagle" class="com.imaginea.kodebeagle.scalaplugin.action.SearchKodeBeagleAction" text="Search with KodeBeagle" icon="/icons/logo.png">
+             <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="$SearchWeb"/>
+             <keyboard-shortcut keymap="$default" first-keystroke="alt 8"/>
+         </action>-->
+
+    </actions>
+
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="KodeBeagle" icon= "/icons/logo.png" anchor="right" factoryClass="com.imaginea.kodebeagle.impl.ui.MainWindow"/>
+        <applicationConfigurable instance="com.imaginea.kodebeagle.base.settings.ui.SettingsConfigurable"/>
+        <problemHighlightFilter implementation="com.imaginea.kodebeagle.impl.highlightfix.ScalaProblemHighlightFilter"/>
+    </extensions>
+
+</idea-plugin>

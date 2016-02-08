@@ -17,12 +17,12 @@
 #
 
 use strict;
-displayCheckStyleWarnings("plugins/idea/common/target/checkstyle-result.xml");
-displayCheckStyleWarnings("plugins/idea/javaPlugin/target/checkstyle-result.xml");
-displayFindBugsWarnings("plugins/idea/common/target/findbugs/report.xml");
-displayFindBugsWarnings("plugins/idea/javaPlugin/target/findbugs/report.xml");
-displayPMDWarnings("plugins/idea/common/target/pmd.xml");
-displayPMDWarnings("plugins/idea/javaPlugin/target/pmd.xml");
+displayCheckStyleWarnings("plugins/idea/pluginBase/target/checkstyle-result.xml");
+displayCheckStyleWarnings("plugins/idea/pluginImpl/target/checkstyle-result.xml");
+displayFindBugsWarnings("plugins/idea/pluginBase/target/findbugs/report.xml");
+displayFindBugsWarnings("plugins/idea/pluginImpl/target/findbugs/report.xml");
+displayPMDWarnings("plugins/idea/pluginBase/target/pmd.xml");
+displayPMDWarnings("plugins/idea/pluginImpl/target/pmd.xml");
 
 # Findbugs
 sub displayFindBugsWarnings {
@@ -96,10 +96,10 @@ while (<FILE>) {
     }
 }
 
-  if ($count > 4 && index($proj , "common") != -1) { # allowing 4 violations only if module is common
+  if ($count > 4 && index($proj , "pluginBase") != -1) { # allowing 4 violations only if module is pluginBase
      print "ERROR: Found additional PMD violations in ${proj}\n";
      print $string;
-  } elsif ($count > 4 && index($proj , "common") == -1 ) {
+  } elsif ($count > 4 && index($proj , "pluginBase") == -1 ) {
      print "ERROR: Found PMD violations in ${proj}\n";
      print $string;
   } else {

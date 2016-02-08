@@ -23,7 +23,7 @@ import de.johoop.findbugs4sbt.FindBugs._
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyKeys._
-import sbtassembly.MergeStrategy
+import sbtassembly.{AssemblyPlugin, MergeStrategy}
 
 object KodeBeagleBuild extends Build {
 
@@ -40,14 +40,22 @@ object KodeBeagleBuild extends Build {
   lazy val core = Project("core", file("core"), settings =
     coreSettings)
 
-  lazy val javaPlugin = Project("javaPlugin", file("plugins/idea/javaPlugin"), settings =
-    pluginSettingsFull ++ findbugsSettings ++
-      codequality.CodeQualityPlugin.Settings ++ excludeDependency) dependsOn common
+  lazy val pluginImpl = Project("pluginImpl", file("plugins/idea/pluginImpl"), settings =
+    pluginSettingsFull ++ findbugsSettings ++ scalaPluginSettings ++
+      codequality.CodeQualityPlugin.Settings ++ excludeDependency).settings(
+    findbugsExcludeFilters := Some(
+      <FindBugsFilter>
+        <Match>
+          <Class name="~.*PsiScalaElementVisitor.*"/>
+        </Match>
+      </FindBugsFilter>
+    )
+  ) dependsOn pluginBase
 
   lazy val pluginTests = Project("pluginTests", file("plugins/idea/pluginTests"), settings =
-    pluginTestSettings) dependsOn javaPlugin
+    pluginTestSettings) dependsOn pluginImpl disablePlugins AssemblyPlugin
 
-  lazy val common = Project("pluginCommon", file("plugins/idea/common"), settings =
+  lazy val pluginBase = Project("pluginBase", file("plugins/idea/pluginBase"), settings =
     pluginSettings ++ findbugsSettings ++
       codequality.CodeQualityPlugin.Settings)
 
@@ -57,16 +65,26 @@ object KodeBeagleBuild extends Build {
   // This is required for plugin devlopment.
   val ideaLib = sys.env.get("IDEA_LIB").orElse(sys.props.get("idea.lib"))
 
+  val scalaPluginJar = sys.env.get("SCALA_PLUGIN").orElse(sys.props.get("scala.plugin"))
+
   def aggregatedProjects: Seq[ProjectReference] = {
-    if (ideaLib.isDefined) {
-      Seq(core, common, javaPlugin, pluginTests)
+    if (ideaLib.isDefined && scalaPluginJar.isDefined) {
+      Seq(core, pluginBase, pluginImpl, pluginTests)
     } else {
       println(
-        """[warn] Plugin project disabled. To enable append -Didea.lib="idea/lib" to JVM
-        params in SBT settings or while invoking sbt (incase it is called from commandline.). """)
+        """[warn] Plugin project disabled. To enable append -Didea.lib="idea/lib"""" ++
+          """ and -Dscala.plugin="path/to/scala-plugin.jar" to JVM params in SBT settings or""" ++
+          """ while invoking sbt (incase it is called from commandline.). """)
       Seq(core)
     }
   }
+
+  def scalaPluginSettings = if (scalaPluginJar.isEmpty) Seq()
+  else Seq(
+    scalaVersion := "2.11.6",
+    unmanagedJars in Compile += file(scalaPluginJar.get),
+    libraryDependencies += "org.scala-lang" % "scala-library" % scalaVersion.value % "provided"
+  )
 
   def pluginSettings = kodebeagleSettings ++ (if (ideaLib.isEmpty) Seq()
   else
@@ -95,7 +113,12 @@ object KodeBeagleBuild extends Build {
     autoScalaLibrary := true,
     scalaVersion := "2.11.6")
 
-  def coreSettings = kodebeagleSettings ++ Seq(libraryDependencies ++= Dependencies.kodebeagle)
+  def coreSettings = kodebeagleSettings ++ Seq(libraryDependencies ++= Dependencies.kodebeagle) ++ Seq(assemblyMergeStrategy in assembly := {
+    case "plugin.properties" | "plugin.xml" | ".api_description" | "META-INF/eclipse.inf" | ".options" => MergeStrategy.first
+    case x =>
+      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      oldStrategy(x)
+  })
 
   def kodebeagleSettings =
     Defaults.coreDefaultSettings ++ Seq(
@@ -112,13 +135,7 @@ object KodeBeagleBuild extends Build {
       fork := true,
       javacOptions ++= Seq("-source", "1.7"),
       javaOptions += "-Xmx6048m",
-      javaOptions += "-XX:+HeapDumpOnOutOfMemoryError",
-      assemblyMergeStrategy in assembly := {
-        case "plugin.properties" |"plugin.xml" |".api_description" | "META-INF/eclipse.inf" | ".options"   => MergeStrategy.first
-        case x =>
-          val oldStrategy = (assemblyMergeStrategy in assembly).value
-          oldStrategy(x)
-      }
+      javaOptions += "-XX:+HeapDumpOnOutOfMemoryError"
     )
 }
 

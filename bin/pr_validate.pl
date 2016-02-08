@@ -20,7 +20,7 @@
 use strict;
 
 
-open FILE, "plugins/idea/javaPlugin/src/main/resources/META-INF/plugin.xml" or die "Couldn't open file: $!";
+open FILE, "plugins/idea/pluginImpl/src/main/resources/META-INF/plugin.xml" or die "Couldn't open file: $!";
 
 my $string = "";
 my $count = 0;

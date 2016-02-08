@@ -4,8 +4,10 @@ scala:
 jdk:
   - oraclejdk8
 install:
-  - IDEA_VERSION=13.1.6
+  - IDEA_VERSION=15.0.2
   - IDEA_TAR=ideaIC-${IDEA_VERSION}.tar.gz
+  - SCALA_PLUGIN_VERSION=2.0.4
+  - SCALA_PLUGIN_FULL=scala-intellij-bin-${SCALA_PLUGIN_VERSION}.zip
   - |
     if [ -f ~/$IDEA_TAR ]; then
         echo "Copying existing IDEA archive."
@@ -16,6 +18,22 @@ install:
         echo "Copying IDEA archive."
         cp ~/$IDEA_TAR .
     fi
+  - |
+    if [ -f ~/$SCALA_PLUGIN_FULL ]; then
+        echo "Copying existing SCALA-PLUGIN zip."
+        cp ~/$SCALA_PLUGIN_FULL .
+    else
+        echo "Downloading SCALA-PLUGIN zip."
+        travis_retry wget --content-disposition "https://plugins.jetbrains.com/plugin/download?pr=&updateId=22559" -P ~
+        echo "Copying SCALA-PLUGIN zip."
+        cp ~/$SCALA_PLUGIN_FULL .
+    fi
+  - unzip $SCALA_PLUGIN_FULL Scala/lib/scala-plugin.jar -d .
+  - rm $SCALA_PLUGIN_FULL
+  - echo "Installing scala-plugin.jar"
+  - cp Scala/lib/scala-plugin.jar .
+  - rm -rf Scala
+  - echo "$(pwd)/scala-plugin.jar"
   - rm -rf idea-IC-*
   - echo "Installing IDEA to idea-IC/"
   - tar zxf $IDEA_TAR
@@ -29,7 +47,7 @@ env:
   - PR_VALIDATE=0
 
 script:
-  - IDEA_LIB="$(pwd)/idea-IC/lib" bin/run_tests.sh
+  - IDEA_LIB="$(pwd)/idea-IC/lib" SCALA_PLUGIN="$(pwd)/scala-plugin.jar" bin/run_tests.sh
 
 notifications:
   email: true
