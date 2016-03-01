@@ -94,7 +94,7 @@ object GitHubApiHelper extends Logger {
     RepoFileNameInfo((repo \ "owner" \ "login").extract[String],
       (repo \ "id").extract[Int], (repo \ "name").extract[String], (repo \ "fork").extract[Boolean],
       (repo \ "language").extract[String], (repo \ "default_branch").extract[String],
-      (repo \ "stargazers_count").extract[Int])
+      (repo \ "stargazers_count").extract[Int], "")
   }
 
   /*

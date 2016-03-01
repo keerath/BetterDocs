@@ -31,19 +31,19 @@ class ParserSuite extends FunSuite with BeforeAndAfterAll {
 
   test("Simple repo") {
     val r = RepoFileNameParser("repo~apache~zookeeper~160999~false~Java~trunk~789.zip")
-    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "trunk", 789))
+    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "trunk", 789, ""))
   }
 
   test("Names with special character") {
     val r = RepoFileNameParser("/home/dir~temp/repo~apache~zookeeper-lost~160999~false~Java" +
       "~=+-trunk/2.1~789.zip")
     assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper-lost", false,
-      "Java", "=+-trunk/2.1", 789))
+      "Java", "=+-trunk/2.1", 789, ""))
   }
 
   test("Branch name with version number only") {
     val r = RepoFileNameParser("repo~apache~zookeeper~160999~false~Java~2.1~789.zip")
-    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "2.1", 789))
+    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "2.1", 789, ""))
   }
 
 
@@ -54,13 +54,13 @@ class ParserSuite extends FunSuite with BeforeAndAfterAll {
 
   test("Branch name absent.") {
     val r = RepoFileNameParser("repo~apache~zookeeper~160999~false~Java~789.zip")
-    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "master", 789))
+    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "master", 789, ""))
   }
 
   test("Hdfs url.") {
     val r = RepoFileNameParser(
       "/172.16.13.179:9000/user/data/github3/repo~apache~zookeeper~160999~false~Java~789.zip")
-    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "master", 789))
+    assert(r.get == RepoFileNameInfo("apache", 160999, "zookeeper", false, "Java", "master", 789, ""))
   }
 
   test("Multiple valid repo names.") {

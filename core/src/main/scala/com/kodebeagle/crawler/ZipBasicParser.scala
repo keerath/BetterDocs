@@ -99,7 +99,6 @@ object ZipBasicParser extends Logger {
     val kmlBytes = output.toByteArray
     output.close()
     new String(kmlBytes, "utf-8").trim.replaceAll("\t", "  ")
-
   }
 
   def readJSFiles(repoFileNameInfo: Option[RepoFileNameInfo],

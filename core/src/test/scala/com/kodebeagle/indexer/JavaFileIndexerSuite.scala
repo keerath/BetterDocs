@@ -26,7 +26,7 @@ class JavaASTBasedIndexerForMethodsSuite extends FunSuite with BeforeAndAfterAll
   val stream =
     Thread.currentThread().getContextClassLoader.getResourceAsStream("TransportClient.java")
   val writer = new StringWriter()
-  val sampleRepo = RepoFileNameInfo("sample", 0, "sample", false, "Java", "master", 0)
+  val sampleRepo = RepoFileNameInfo("sample", 0, "sample", false, "Java", "master", 0, "")
 
   override def beforeAll() {
     IOUtils.copy(stream, writer)

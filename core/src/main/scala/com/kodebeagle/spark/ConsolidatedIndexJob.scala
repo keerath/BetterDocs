@@ -35,17 +35,8 @@ case class Input(javaFiles: List[(String, String)], scalaFiles: List[(String, St
 
 object ConsolidatedIndexJob {
 
-  def main(args: Array[String]): Unit = {
+  def run(sc: SparkContext): Unit = {
     val TYPEREFS = "typereferences"
-    val conf = new SparkConf()
-      .setMaster(KodeBeagleConfig.sparkMaster)
-      .setAppName("CreateIndexJobForMethods")
-      .set("spark.driver.memory", "6g")
-      .set("spark.executor.memory", "4g")
-      .set("spark.network.timeout", "1200s")
-
-    val sc: SparkContext = createSparkContext(conf)
-
     val zipFileExtractedRDD: RDD[(List[(String, String)], List[(String, String)],
       Option[Repository], List[String])] = makeZipFileExtractedRDD(sc)
 

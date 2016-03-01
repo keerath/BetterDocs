@@ -125,6 +125,7 @@ object KodeBeagleBuild extends Build {
       git.useGitDescribe := true,
       scalacOptions := scalacOptionsList,
       //resolvers += Resolver.mavenLocal,
+      resolvers += "Job Server Bintray" at "https://dl.bintray.com/spark-jobserver/maven",
       updateOptions := updateOptions.value.withCachedResolution(true),
       updateOptions := updateOptions.value.withLatestSnapshots(false),
       crossPaths := false,
@@ -153,11 +154,13 @@ object Dependencies {
   val commonsIO = "commons-io" % "commons-io" % "2.4"
   val esSpark = "org.elasticsearch" % "elasticsearch-spark_2.11" % "2.1.0.Beta4"
   val guava = "com.google.guava" % "guava" % "18.0"
+  val elasticSearch = "org.elasticsearch" % "elasticsearch" % "1.7.1"
   val akka = "com.typesafe.akka" % "akka-actor_2.11" % "2.4.0"
   val compress = "org.apache.commons" % "commons-compress" % "1.10"
   val graphx = "org.apache.spark" % "spark-graphx_2.11" % "1.4.1"
   val junit = "junit" % "junit" % "4.12"
   val rhino = "org.mozilla" % "rhino" % "1.7R4"
+  val jobServer = "spark.jobserver" %% "job-server-api" % "0.6.1" % "provided"
 
   //Eclipse dependencies for Tassal libs
   object EclipseDeps {
@@ -175,8 +178,8 @@ object Dependencies {
     val allDeps = Seq(tycho, contentType, coreJobs, coreResources, coreRT, eqCommon, eqPref, eqReg, osgi, text)
   }
 
-  val kodebeagle = Seq(akka, httpClient, scalastyle, spark, parserCombinator, scalaTest, slf4j, javaparser, json4s, config,
-    json4sJackson, jgit, commonsIO, esSpark, graphx, guava, compress, junit, rhino) ++ EclipseDeps.allDeps
+  val kodebeagle = Seq(akka, httpClient, scalastyle, spark, jobServer, parserCombinator, scalaTest, slf4j, javaparser, json4s, config,
+    json4sJackson, jgit, commonsIO, esSpark, graphx, guava, compress, junit, rhino, elasticSearch) ++ EclipseDeps.allDeps
 
   val ideaPluginTest = Seq(scalaTest, commonsIO)
   val ideaPlugin = Seq()

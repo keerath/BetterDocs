@@ -77,7 +77,7 @@ case class Token(importName: String, importExactName: String,
 case class SourceFile(repoId: Int, fileName: String, fileContent: String)
 
 case class RepoFileNameInfo(login: String, id: Int, name: String, fork: Boolean, language: String,
-                            defaultBranch: String, stargazersCount: Int)
+                            defaultBranch: String, stargazersCount: Int, tagName: String)
 
 case class Repository(login: String, id: Int, name: String, fork: Boolean, language: String,
                       defaultBranch: String, stargazersCount: Int, sloc: Int, fileCount: Int,

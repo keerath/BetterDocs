@@ -25,18 +25,22 @@ import scala.util.parsing.combinator._
 
 object RepoFileNameParser extends RegexParsers with Logger {
 
-  def apply(input: String): Option[RepoFileNameInfo] = Try(parseAll(repo, input)).toOption.flatMap {
-    case Success(result, _) => Some(result)
-    case failure: NoSuccess => log.error(failure.msg)
-      None
+  def apply(input: String): Option[RepoFileNameInfo] = {
+    val triedResult1: Try[RepoFileNameParser.ParseResult[RepoFileNameInfo]] = Try(parseAll(repo, input))
+    triedResult1.toOption.flatMap {
+      case Success(result, _) => Some(result)
+      case failure: NoSuccess => log.error(failure.msg)
+        None
+    }
   }
 
   def repo: Parser[RepoFileNameInfo] = {
     "(|.*/)repo".r ~> rep(tilde ~> name) ^^ {
       x => val y = x.toArray
-        val branch = if (y.size == 7) y(5) else "master"
+        val branch = if (y.size == 8) y(5) else "master"
+        val tag = if(y.size == 8) y(7).stripPrefix(".zip").trim else ""
         RepoFileNameInfo(y(0), y(2).toInt, y(1), false, y(4), branch,
-          x.last.trim.stripSuffix(".zip").toInt)
+          y(6).stripSuffix(".zip").trim.toInt, tag)
     }
   }
 
