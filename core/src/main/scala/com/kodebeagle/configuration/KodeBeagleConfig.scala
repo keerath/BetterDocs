@@ -31,7 +31,6 @@ object KodeBeagleConfig extends ConfigReader{
   private[kodebeagle] val sparkRepoOutput = get("kodebeagle.spark.repo.outputDir").get
   private[kodebeagle] val sparkSourceOutput = get("kodebeagle.spark.source.outputDir").get
   private[kodebeagle] val sparkMethodsOutput = get("kodebeagle.spark.method.outputDir").get
-  val nameNodeURL = get("hdfs.namenode.url").get
 
   private[kodebeagle] val linesOfContext = get("kodebeagle.indexing.linesOfContext").get
   // This is required to use GithubAPIHelper

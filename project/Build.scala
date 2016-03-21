@@ -121,7 +121,7 @@ object KodeBeagleBuild extends Build {
       name := "KodeBeagle",
       organization := "com.kodebeagle",
       git.baseVersion := "0.1.0",
-      scalaVersion := "2.11.6",
+      scalaVersion := "2.10.4",
       git.useGitDescribe := true,
       scalacOptions := scalacOptionsList,
       //resolvers += Resolver.mavenLocal,
@@ -142,7 +142,6 @@ object Dependencies {
   // Needed for scala parsing.
   val spark = "org.apache.spark" %% "spark-core" % "1.4.1"
   //"org.apache.spark" %% "spark-core" % "1.3.1" // % "provided" Provided makes it not run through sbt run.
-  val parserCombinator = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.3"
   val scalaTest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
   val slf4j = "org.slf4j" % "slf4j-log4j12" % "1.7.10"
   val javaparser = "com.github.javaparser" % "javaparser-core" % "2.0.0"
@@ -152,15 +151,14 @@ object Dependencies {
   val config = "com.typesafe" % "config" % "1.2.1"
   val jgit = "org.eclipse.jgit" % "org.eclipse.jgit" % "3.7.0.201502260915-r" intransitive()
   val commonsIO = "commons-io" % "commons-io" % "2.4"
-  val esSpark = "org.elasticsearch" % "elasticsearch-spark_2.11" % "2.1.0.Beta4"
+  val esSpark = "org.elasticsearch" % "elasticsearch-spark_2.10" % "2.2.0"
   val guava = "com.google.guava" % "guava" % "18.0"
   val elasticSearch = "org.elasticsearch" % "elasticsearch" % "1.7.1"
-  val akka = "com.typesafe.akka" % "akka-actor_2.11" % "2.4.0"
+  val akka = "com.typesafe.akka" % "akka-actor_2.10" % "2.3.14"
   val compress = "org.apache.commons" % "commons-compress" % "1.10"
-  val graphx = "org.apache.spark" % "spark-graphx_2.11" % "1.4.1"
+  val graphx = "org.apache.spark" %% "spark-graphx" % "1.4.1"
   val junit = "junit" % "junit" % "4.12"
   val rhino = "org.mozilla" % "rhino" % "1.7R4"
-  val jobServer = "spark.jobserver" %% "job-server-api" % "0.6.1" % "provided"
 
   //Eclipse dependencies for Tassal libs
   object EclipseDeps {
@@ -178,7 +176,7 @@ object Dependencies {
     val allDeps = Seq(tycho, contentType, coreJobs, coreResources, coreRT, eqCommon, eqPref, eqReg, osgi, text)
   }
 
-  val kodebeagle = Seq(akka, httpClient, scalastyle, spark, jobServer, parserCombinator, scalaTest, slf4j, javaparser, json4s, config,
+  val kodebeagle = Seq(akka, httpClient, scalastyle, spark, scalaTest, slf4j, javaparser, json4s, config,
     json4sJackson, jgit, commonsIO, esSpark, graphx, guava, compress, junit, rhino, elasticSearch) ++ EclipseDeps.allDeps
 
   val ideaPluginTest = Seq(scalaTest, commonsIO)

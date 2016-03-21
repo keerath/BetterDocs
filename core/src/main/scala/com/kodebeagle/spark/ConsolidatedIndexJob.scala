@@ -24,7 +24,6 @@ import com.kodebeagle.spark.SparkIndexJobHelper._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
-
 case class Indices(javaInternal: Set[InternalTypeReference],
                    javaExternal: Set[ExternalTypeReference],
                    scalaInternal: Set[InternalTypeReference],
@@ -35,8 +34,22 @@ case class Input(javaFiles: List[(String, String)], scalaFiles: List[(String, St
 
 object ConsolidatedIndexJob {
 
-  def run(sc: SparkContext): Unit = {
+  def main(args: Array[String]): Unit = {
     val TYPEREFS = "typereferences"
+    val conf = new SparkConf()
+      .setMaster("local[5]")
+      .setAppName("ConsolidatedIndexJob")
+      .set("spark.driver.memory", "6g")
+      .set("spark.executor.memory", "4g")
+      .set("spark.network.timeout", "1200s")
+      .set("es.nodes", "127.0.0.1")
+      .set("es.port", "9200")
+      .set("es.index.auto.create", "true")
+      .set("es.batch.size.bytes", "1000000000")
+      .set("es.batch.size.entries", "100000")
+
+    val sc: SparkContext = new SparkContext(conf)
+
     val zipFileExtractedRDD: RDD[(List[(String, String)], List[(String, String)],
       Option[Repository], List[String])] = makeZipFileExtractedRDD(sc)
 
@@ -51,7 +64,7 @@ object ConsolidatedIndexJob {
     val broadCast = sc.broadcast(new JavaASTParser(true))
 
     //  Create indexes for elastic search.
-    zipFileExtractedRDD.map { f =>
+    val consolidatedRDD = zipFileExtractedRDD.map { f =>
       val (javaFiles, scalaFiles, repo, packages) = f
       val javaScalaTypeRefs =
         generateAllIndices(Input(javaFiles, scalaFiles, repo, packages))
