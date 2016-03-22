@@ -9,7 +9,7 @@ import com.kodebeagle.logging.Logger
 import com.kodebeagle.util.{GitHelper, UnzipUtil}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{Path, FileSystem}
-
+import sys.process._
 
 import scala.util.Try
 
@@ -37,7 +37,7 @@ class ZipTagWorker extends Actor with Logger {
     val x = repoDir.getAbsolutePath
     val paths = tagsToBeIndexed.map(tag => createZipForTag(tag, repoDir.getName)).toArray
     moveToHdfs(paths)
-    repoDir.delete()
+    s"rm -fr ${repoDir.getAbsolutePath}" !
   }
 
   private def createZipForTag(tag: String, repoDirName: String)

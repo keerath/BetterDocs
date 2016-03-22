@@ -155,6 +155,7 @@ object Dependencies {
   val guava = "com.google.guava" % "guava" % "18.0"
   val elasticSearch = "org.elasticsearch" % "elasticsearch" % "1.7.1"
   val akka = "com.typesafe.akka" % "akka-actor_2.10" % "2.3.14"
+  val akkaRemote = "com.typesafe.akka" % "akka-remote_2.10" % "2.3.14"
   val compress = "org.apache.commons" % "commons-compress" % "1.10"
   val graphx = "org.apache.spark" %% "spark-graphx" % "1.4.1"
   val junit = "junit" % "junit" % "4.12"
@@ -176,7 +177,7 @@ object Dependencies {
     val allDeps = Seq(tycho, contentType, coreJobs, coreResources, coreRT, eqCommon, eqPref, eqReg, osgi, text)
   }
 
-  val kodebeagle = Seq(akka, httpClient, scalastyle, spark, scalaTest, slf4j, javaparser, json4s, config,
+  val kodebeagle = Seq(akka, akkaRemote, httpClient, scalastyle, spark, scalaTest, slf4j, javaparser, json4s, config,
     json4sJackson, jgit, commonsIO, esSpark, graphx, guava, compress, junit, rhino, elasticSearch) ++ EclipseDeps.allDeps
 
   val ideaPluginTest = Seq(scalaTest, commonsIO)

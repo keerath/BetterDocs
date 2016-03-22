@@ -10,6 +10,7 @@ class Master(nrOfWorkers: Int, nrOfReposPerWorker: Int) extends Actor with Logge
   val start = System.currentTimeMillis()
   val tagCheckoutWorker = context.actorOf(RoundRobinPool(nrOfWorkers).props(Props[ZipTagWorker]), "tagCheckoutWorker")
   val listOfAllResults = ListBuffer[String]()
+  val remoteActor = context.actorSelection("akka.tcp://RemoteSystem@192.168.2.77:9080/user/RemoteSparkLauncher")
 
   override def receive: Receive = {
     case Work(listOfRepoWork) =>
@@ -18,7 +19,8 @@ class Master(nrOfWorkers: Int, nrOfReposPerWorker: Int) extends Actor with Logge
     case Result =>
       nrOfResults += 1
       if (nrOfResults == nrOfWorkers) {
-        log.info(s"""Time taken ${(System.currentTimeMillis() - start) / 1000}""".stripMargin)
+        log.info(s"""Time taken ${System.currentTimeMillis() - start}""".stripMargin)
+        remoteActor ! Result
         this.context.system.shutdown()
       }
   }

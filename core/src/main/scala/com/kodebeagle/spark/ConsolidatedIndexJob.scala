@@ -17,6 +17,7 @@
 
 package com.kodebeagle.spark
 
+import sys.process._
 import com.kodebeagle.configuration.KodeBeagleConfig
 import com.kodebeagle.indexer.{ExternalTypeReference, FileMetaDataIndexer, InternalTypeReference, JavaExternalTypeRefIndexer, JavaInternalTypeRefIndexer, Repository, ScalaExternalTypeRefIndexer, ScalaInternalTypeRefIndexer}
 import com.kodebeagle.javaparser.JavaASTParser
@@ -42,11 +43,6 @@ object ConsolidatedIndexJob {
       .set("spark.driver.memory", "6g")
       .set("spark.executor.memory", "4g")
       .set("spark.network.timeout", "1200s")
-      .set("es.nodes", "127.0.0.1")
-      .set("es.port", "9200")
-      .set("es.index.auto.create", "true")
-      .set("es.batch.size.bytes", "1000000000")
-      .set("es.batch.size.entries", "100000")
 
     val sc: SparkContext = new SparkContext(conf)
 
@@ -64,7 +60,7 @@ object ConsolidatedIndexJob {
     val broadCast = sc.broadcast(new JavaASTParser(true))
 
     //  Create indexes for elastic search.
-    val consolidatedRDD = zipFileExtractedRDD.map { f =>
+    zipFileExtractedRDD.map { f =>
       val (javaFiles, scalaFiles, repo, packages) = f
       val javaScalaTypeRefs =
         generateAllIndices(Input(javaFiles, scalaFiles, repo, packages))
