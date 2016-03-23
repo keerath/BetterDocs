@@ -38,18 +38,19 @@ abstract class TypeReference {
   def file: String
   def types: Set[T]
   def score: Int
+  def tag: String
 }
 
 
 case class InternalTypeReference(repoId: Int, file: String,
                                  types: Set[InternalType],
-                                 score: Int) extends TypeReference {
+                                 score: Int, tag: String) extends TypeReference {
   type T = InternalType
 }
 
 case class ExternalTypeReference(repoId: Int, file: String,
                                  types: Set[ExternalType],
-                                 score: Int) extends TypeReference {
+                                 score: Int, tag: String) extends TypeReference {
   type T = ExternalType
 }
 
@@ -74,20 +75,20 @@ case class Token(importName: String, importExactName: String,
                  lineNumbers: immutable.Set[ExternalLine])
 
 
-case class SourceFile(repoId: Int, fileName: String, fileContent: String)
+case class SourceFile(repoId: Int, fileName: String, fileContent: String, tag: String)
 
 case class RepoFileNameInfo(login: String, id: Int, name: String, fork: Boolean, language: String,
-                            defaultBranch: String, stargazersCount: Int, tagName: String)
+                            defaultBranch: String, stargazersCount: Int, tag: String)
 
 case class Repository(login: String, id: Int, name: String, fork: Boolean, language: String,
                       defaultBranch: String, stargazersCount: Int, sloc: Int, fileCount: Int,
-                      size: Long)
+                      size: Long, tag: String)
 
 case class Statistics(sloc: Int, fileCount: Int, size: Long)
 
 /** For testing */
 object Repository {
   def invalid: Repository =
-    Repository("n-a", -1, "n-a", fork = false, "Java", "n-a", 0, -1, -1, -1)
+    Repository("n-a", -1, "n-a", fork = false, "Java", "n-a", 0, -1, -1, -1, "")
 }
 

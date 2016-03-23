@@ -41,13 +41,13 @@ case class FileMetaData(repoId: Long, fileName: String, superTypes: SuperTypes,
                         typeLocationList: List[VarTypeLocation],
                         methodTypeLocation: List[MethodTypeLocation],
                         methodDefinitionList: List[MethodDefinition],
-                        internalRefList: List[InternalRef])
+                        internalRefList: List[InternalRef], tag: String)
 
 
 object FileMetaDataIndexer extends Logger {
   import scala.collection.JavaConversions._
 
-    def generateMetaData(repoSources: Set[SourceFile], pars: Broadcast[JavaASTParser]):
+    def generateMetaData(repoSources: Set[SourceFile], pars: Broadcast[JavaASTParser], tag: String):
     Set[FileMetaData] = {
       val filesMetaData = for (source <- repoSources) yield {
           val cu: ASTNode = pars.value.getAST(source.fileContent, ParseType.COMPILATION_UNIT)
@@ -75,7 +75,7 @@ object FileMetaDataIndexer extends Logger {
 
             Some(FileMetaData(source.repoId, source.fileName, superTypes, fileTypes.toList,
               externalRefsList.toList, typeLocationVarList.toList ++ importLocationList.toList,
-              typeLocationMethodList.toList, methodDefinitionList.toList, internalRefsList.toList))
+              typeLocationMethodList.toList, methodDefinitionList.toList, internalRefsList.toList, tag))
           } else {
             log.info("Unable to create AST for file " + source.fileName +
               "and file contents are \n" + source.fileContent)

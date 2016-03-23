@@ -47,9 +47,9 @@ class ScalaInternalTypeRefIndexer extends ScalaTypeRefIndexer {
         listOfListOfType.map(listOfType =>
           InternalTypeReference(repository.id, absoluteFileName,
             listOfType.asInstanceOf[List[InternalType]].toSet,
-            repository.stargazersCount))
+            repository.stargazersCount, repository.tag))
       } else {
-        Set(InternalTypeReference(-1, "", Set[InternalType](), -1))
+        Set(InternalTypeReference(-1, "", Set[InternalType](), -1, ""))
       }
     }.filter(_.types.nonEmpty).toSet
   }

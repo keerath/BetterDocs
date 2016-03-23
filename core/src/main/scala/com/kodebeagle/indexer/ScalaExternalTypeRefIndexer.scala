@@ -41,9 +41,9 @@ class ScalaExternalTypeRefIndexer extends ScalaTypeRefIndexer {
         listOfListOfType.map(listOfType =>
           ExternalTypeReference(repository.id, absoluteFileName,
             listOfType.asInstanceOf[List[ExternalType]].toSet,
-            repository.stargazersCount))
+            repository.stargazersCount, repository.tag))
       } else {
-        Set(ExternalTypeReference(-1, "", Set[ExternalType](), -1))
+        Set(ExternalTypeReference(-1, "", Set[ExternalType](), -1, ""))
       }
     }.filter(_.types.nonEmpty).toSet
   }

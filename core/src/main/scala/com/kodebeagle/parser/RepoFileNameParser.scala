@@ -37,10 +37,11 @@ object RepoFileNameParser extends RegexParsers with Logger {
   def repo: Parser[RepoFileNameInfo] = {
     "(|.*/)repo".r ~> rep(tilde ~> name) ^^ {
       x => val y = x.toArray
-        val branch = if (y.size == 8) y(5) else "master"
+        val branch = if(y.size < 7) "master" else y(5)
+        val stars = if(y.size  == 8) y(6) else y.last
         val tag = if(y.size == 8) y(7).stripPrefix(".zip").trim else ""
         RepoFileNameInfo(y(0), y(2).toInt, y(1), false, y(4), branch,
-          y(6).stripSuffix(".zip").trim.toInt, tag)
+          stars.stripSuffix(".zip").trim.toInt, tag)
     }
   }
 

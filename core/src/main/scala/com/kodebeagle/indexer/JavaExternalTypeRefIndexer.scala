@@ -65,7 +65,7 @@ class JavaExternalTypeRefIndexer extends JavaTypeRefIndexer {
         for (methodToken <- methodTokens) {
           indexEntries =
             indexEntries + ExternalTypeReference(r.id, fullGithubURL, methodToken,
-              score)
+              score, r.tag)
         }
       } catch {
         case e: Throwable => log.error(s"Failed for $fullGithubURL", e);

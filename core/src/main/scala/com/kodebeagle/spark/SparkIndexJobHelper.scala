@@ -35,7 +35,7 @@ object SparkIndexJobHelper {
     val repo2 = repo.getOrElse(Repository.invalid)
     import com.kodebeagle.indexer.JavaFileIndexerHelper._
 
-    map.map(x => SourceFile(repo2.id, fileNameToURL(repo2, x._1), x._2)).toSet
+    map.map(x => SourceFile(repo2.id, fileNameToURL(repo2, x._1), x._2, repo2.tag)).toSet
   }
 
   def createSparkContext(conf: SparkConf): SparkContext = new SparkContext(conf)

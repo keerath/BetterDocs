@@ -23,8 +23,8 @@ class ZipTagWorker extends Actor with Logger {
 
   override def receive: Receive = {
     case Work(listOfRepoWork) =>
-      sender() ! listOfRepoWork.foreach(doWork)
-      Result
+      listOfRepoWork.foreach(doWork)
+      sender() ! Result
   }
 
   private def doWork(repoWork: RepoWork) = {

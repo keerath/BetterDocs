@@ -17,7 +17,6 @@
 
 package com.kodebeagle.spark
 
-import sys.process._
 import com.kodebeagle.configuration.KodeBeagleConfig
 import com.kodebeagle.indexer.{ExternalTypeReference, FileMetaDataIndexer, InternalTypeReference, JavaExternalTypeRefIndexer, JavaInternalTypeRefIndexer, Repository, ScalaExternalTypeRefIndexer, ScalaInternalTypeRefIndexer}
 import com.kodebeagle.javaparser.JavaASTParser
@@ -38,8 +37,6 @@ object ConsolidatedIndexJob {
   def main(args: Array[String]): Unit = {
     val TYPEREFS = "typereferences"
     val conf = new SparkConf()
-      .setMaster("local[5]")
-      .setAppName("ConsolidatedIndexJob")
       .set("spark.driver.memory", "6g")
       .set("spark.executor.memory", "4g")
       .set("spark.network.timeout", "1200s")
@@ -67,7 +64,7 @@ object ConsolidatedIndexJob {
       val sourceFiles = mapToSourceFiles(repo, javaFiles ++ scalaFiles)
       (repo, javaScalaTypeRefs.javaInternal, javaScalaTypeRefs.javaExternal,
         javaScalaTypeRefs.scalaInternal, javaScalaTypeRefs.scalaExternal,
-        FileMetaDataIndexer.generateMetaData(sourceFiles, broadCast),
+        FileMetaDataIndexer.generateMetaData(sourceFiles, broadCast, repo.getOrElse(Repository.invalid).tag),
         sourceFiles)
     }.flatMap { case (Some(repository), javaInternalIndices, javaExternalIndices,
     scalaInternalIndices, scalaExternalIndices, metadataIndices, sourceFiles) =>

@@ -6,20 +6,36 @@ import org.apache.spark.launcher.SparkLauncher
 
 
 object RemoteActorLauncher extends App {
-  val config = ConfigFactory.load("remoteSparkLauncher.conf")
+  val rawConfig  = """akka {
+                     |  loglevel = "INFO"
+                     |  actor {
+                     |    provider = "akka.remote.RemoteActorRefProvider"
+                     |  }
+                     |  remote {
+                     |    enabled-transports = ["akka.remote.netty.tcp"]
+                     |    netty.tcp {
+                     |      hostname = "192.168.2.77"
+                     |      port = 9080
+                     |    }
+                     |    log-sent-messages = on
+                     |    log-received-messages = on
+                     |  }
+                     |}""".stripMargin
+
+  val config = ConfigFactory.parseString(rawConfig)
   val remoteSystem = ActorSystem("RemoteSystem", config)
-  val remote = remoteSystem.actorOf(Props(new RemoteSparkLauncher(args(0))), name = "RemoteSparkLauncher")
+  val remote = remoteSystem.actorOf(Props(new RemoteSparkLauncher(args(0), args(1).toInt)), name = "RemoteSparkLauncher")
 }
 
-class RemoteSparkLauncher(assemblyPath: String) extends Actor {
+class RemoteSparkLauncher(assemblyPath: String, nrOfResults: Int) extends Actor {
   var resultCounter = 0
 
   override def receive: Receive = {
     case Result =>
-      if(resultCounter == 4) {
+      resultCounter += 1
+      if (resultCounter == nrOfResults) {
         launchSparkJob
-      } else {
-        resultCounter+=1
+        resultCounter = 0
       }
     case _ =>
   }
@@ -27,6 +43,7 @@ class RemoteSparkLauncher(assemblyPath: String) extends Actor {
   private def launchSparkJob = {
     val spark = new SparkLauncher().setSparkHome(System.getenv("SPARK_HOME"))
       .setAppName("ConsolidatedIndexJob")
+      .setConf("spark.driver.host", "192.168.2.145")
       .setAppResource(assemblyPath).setDeployMode("cluster")
       .setMainClass("com.kodebeagle.spark.ConsolidatedIndexJob").setMaster("spark://HadoopMaster:6066")
       .launch()

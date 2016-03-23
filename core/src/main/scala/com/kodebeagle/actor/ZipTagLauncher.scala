@@ -6,6 +6,7 @@ import java.io.File
 import akka.actor.{Props, ActorSystem}
 import com.kodebeagle.indexer.RepoFileNameInfo
 import com.kodebeagle.parser.RepoFileNameParser
+import com.typesafe.config.ConfigFactory
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
@@ -13,11 +14,11 @@ import org.elasticsearch.index.query.QueryBuilders
 
 import scala.collection.JavaConversions._
 
-object Main {
+object ZipTagLauncher {
   val lookUp = esFetchRepoIdAndTags
 
   def main(args: Array[String]): Unit = {
-    val listOfFiles = listFiles("/home/keerathj/Desktop/repos")
+    val listOfFiles = listFiles(args(0))
     val listOfRepoNameVsPath = listOfFiles.flatMap(tupleOfRepoNameVsPath)
     val listOfRepoWork = listOfRepoNameVsPath.map(toRepoWork)
     val master = initActorSystem(listOfRepoWork.size)
@@ -25,11 +26,28 @@ object Main {
   }
 
   private def initActorSystem(numOfRepos: Int) = {
-    val actorSystem = ActorSystem("TagBasedIndexer")
-    val numOfWorkers = Runtime.getRuntime.availableProcessors() * 2
-    val numOfReposPerWorker = numOfRepos / numOfWorkers
-    actorSystem.actorOf(Props(new Master(numOfWorkers,
-      numOfReposPerWorker)), name = "Master")
+    val rawConfig = """akka {
+                      |  loglevel = "INFO"
+                      |  actor {
+                      |    provider = "akka.remote.RemoteActorRefProvider"
+                      |  }
+                      |  remote {
+                      |    enabled-transports = ["akka.remote.netty.tcp"]
+                      |    netty.tcp {
+                      |      hostname = "127.0.0.1"
+                      |      port = 2552
+                      |    }
+                      |    log-sent-messages = on
+                      |    log-received-messages = on
+                      |  }
+                      |}""".stripMargin
+
+    val config = ConfigFactory.parseString(rawConfig)
+    val actorSystem = ActorSystem("ZipForEachTag", config)
+    val numOfWorkers = numOfRepos
+    val numOfReposPerWorker = 1
+    actorSystem.actorOf(Props(new ZipTagMaster(numOfWorkers,
+      numOfReposPerWorker)), name = "ZipTagMaster")
   }
 
   private def toRepoWork(tupleOfRepoNameVsPath: (RepoFileNameInfo, String)) = {
@@ -63,7 +81,7 @@ object Main {
       esMap.get("id").get.toString.toInt -> esMap.get("tag").get.toString
 
     val clusterName = "kodebeagle1"
-    val hostName = "localhost"
+    val hostName = "172.16.12.21"
     val port = 9300
     val size = 1000
     val client = new TransportClient(ImmutableSettings.settingsBuilder()/*.put("cluster.name", clusterName)*/

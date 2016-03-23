@@ -49,7 +49,7 @@ class JavaInternalTypeRefIndexer extends JavaExternalTypeRefIndexer {
             methodToken.map(x => InternalType(x.typeName,
               toInternalHighlighters(lines, x.lines), x.properties))
           indexEntries = indexEntries +
-            InternalTypeReference(r.id, fullGithubURL, internalMethodToken, score)
+            InternalTypeReference(r.id, fullGithubURL, internalMethodToken, score, r.tag)
         }
       } catch {
         case e: Throwable => log.error(s"Failed for $fullGithubURL", e);
