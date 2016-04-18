@@ -18,14 +18,14 @@
 package com.kodebeagle.crawler
 
 import java.io._
-import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
+import java.util.zip.{ZipEntry, ZipInputStream}
 
-import com.kodebeagle.indexer.{Repository, RepoFileNameInfo, Statistics}
+import com.kodebeagle.indexer.{RepoFileNameInfo, Repository, Statistics}
 import com.kodebeagle.logging.Logger
+import com.kodebeagle.spark.Input
 import org.apache.commons.compress.archivers.zip.{ZipArchiveEntry, ZipArchiveOutputStream}
 
 import scala.collection.mutable
-import scala.util.Try
 
 /**
   * Extracts java files and packages from the given zip file.
@@ -35,59 +35,12 @@ object ZipBasicParser extends Logger {
 
   private val bufferSize = 1024000 // about 1 mb
 
-  private def fileNameToPackageName(s: String) = {
-    val (_, packageN) = s.splitAt(s.indexOf("/src/"))
-    packageN.stripPrefix("/").stripSuffix("/").replace('/', '.').stripPrefix("src.main.java.")
-      .stripPrefix("src.main.scala.")
-  }
+  private def replaceSpecialChars(tag: String) = tag.replaceAll("kbslash12", "/")
 
   private def toRepository(mayBeFileInfo: Option[RepoFileNameInfo], stats: Statistics) =
     mayBeFileInfo.map(fileInfo => Repository(fileInfo.login, fileInfo.id, fileInfo.name,
       fileInfo.fork, fileInfo.language, fileInfo.defaultBranch, fileInfo.stargazersCount,
-      stats.sloc, stats.fileCount, stats.size))
-
-  def readFilesAndPackages(repoFileNameInfo: Option[RepoFileNameInfo],
-                           zipStream: ZipInputStream): (List[(String, String)],
-    List[(String, String)], List[String], Option[Repository]) = {
-    val javaFileList = mutable.ArrayBuffer[(String, String)]()
-    val scalaFileList = mutable.ArrayBuffer[(String, String)]()
-    val allPackages = mutable.ArrayBuffer[String]()
-    var size: Long = 0
-    var fileCount: Int = 0
-    var sloc: Int = 0
-    var ze: Option[ZipEntry] = None
-    try {
-      do {
-        ze = Option(zipStream.getNextEntry)
-        ze.foreach { ze => if (!ze.isDirectory) {
-          val fileName = ze.getName
-          val fileContent = readContent(zipStream)
-          size += fileContent.length
-          fileCount += 1
-          sloc += fileContent.split("\n").size
-          if (ze.getName.endsWith(".scala")) {
-            scalaFileList += (fileName -> fileContent)
-          } else if (ze.getName.endsWith(".java")) {
-            javaFileList += (fileName -> fileContent)
-          }
-        } else if (ze.isDirectory && (ze.getName.toLowerCase.matches(".*src/main/java.*")
-          || ze.getName.toLowerCase.matches(".*src/main/scala.*"))) {
-          allPackages += fileNameToPackageName(ze.getName)
-        }
-        }
-        zipStream.closeEntry()
-      } while (ze.isDefined)
-    } catch {
-      case ex: Exception => log.error("Exception reading next entry {}", ex)
-    } finally {
-      zipStream.close()
-    }
-    // This is not precise, and might be effected by char-encoding.
-    val sizeInKB: Long = size / 1024
-    val statistics = Statistics(sloc, fileCount, sizeInKB)
-    (javaFileList.toList, scalaFileList.toList,
-      allPackages.toList, toRepository(repoFileNameInfo, statistics))
-  }
+      stats.sloc, stats.fileCount, stats.size, replaceSpecialChars(fileInfo.tag)))
 
   def readContent(stream: ZipInputStream): String = {
     val output = new ByteArrayOutputStream()
@@ -98,7 +51,7 @@ object ZipBasicParser extends Logger {
     } while (data != -1)
     val kmlBytes = output.toByteArray
     output.close()
-    new String(kmlBytes, "utf-8").trim.replaceAll("\t", "  ")
+    new String(kmlBytes, "utf-8")
   }
 
   def readJSFiles(repoFileNameInfo: Option[RepoFileNameInfo],

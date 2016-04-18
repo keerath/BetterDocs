@@ -40,13 +40,13 @@ object SparkIndexJobHelper {
 
   def createSparkContext(conf: SparkConf): SparkContext = new SparkContext(conf)
 
-  def makeZipFileExtractedRDD(sc: SparkContext): RDD[(List[(String, String)],
+  def makeZipFileExtractedRDD(sc: SparkContext, batch: String): RDD[(List[(String, String)],
     List[(String, String)], Option[Repository], List[String])] = {
-    val zipFileNameRDD = sc.binaryFiles(KodeBeagleConfig.githubDir).map {
+    val zipFileNameRDD = sc.binaryFiles(KodeBeagleConfig.githubDir + batch).map {
       case (zipFile, stream) =>
         (zipFile.stripPrefix("file:").stripPrefix("hdfs:"), stream)
     }
-    val zipFileExtractedRDD = zipFileNameRDD.map { case (zipFileName, stream) =>
+    val zipFileExtractedRDD = zipFileNameRDD.repartition(200).map { case (zipFileName, stream) =>
       val repoInfo: Option[RepoFileNameInfo] = RepoFileNameParser(zipFileName)
       val (javaFilesMap, scalaFilesMap, packages, repository) =
         ZipBasicParser.readFilesAndPackages(repoInfo,
@@ -94,7 +94,6 @@ object SparkIndexJobHelper {
       s"""|{ "index" : { "_index" : "$indexName", "_type" : "$typeName" } }
           |""".stripMargin + write(t)
     } else "" + write(t)
-
   }
 
   def toJson[T <: AnyRef <% Product with Serializable](t: T, addESHeader: Boolean = true,

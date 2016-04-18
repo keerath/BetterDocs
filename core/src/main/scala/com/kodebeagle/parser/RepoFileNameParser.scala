@@ -39,7 +39,7 @@ object RepoFileNameParser extends RegexParsers with Logger {
       x => val y = x.toArray
         val branch = if(y.size < 7) "master" else y(5)
         val stars = if(y.size  == 8) y(6) else y.last
-        val tag = if(y.size == 8) y(7).stripPrefix(".zip").trim else ""
+        val tag = if(y.size == 8) y(7).stripSuffix(".zip").trim else ""
         RepoFileNameInfo(y(0), y(2).toInt, y(1), false, y(4), branch,
           stars.stripSuffix(".zip").trim.toInt, tag)
     }

@@ -2,11 +2,10 @@ package com.kodebeagle.actor
 
 import java.io.File
 
-
-import akka.actor.{Props, ActorSystem}
+import akka.actor.{ActorSystem, Props}
 import com.kodebeagle.indexer.RepoFileNameInfo
+import com.kodebeagle.logging.Logger
 import com.kodebeagle.parser.RepoFileNameParser
-import com.typesafe.config.ConfigFactory
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
@@ -14,41 +13,38 @@ import org.elasticsearch.index.query.QueryBuilders
 
 import scala.collection.JavaConversions._
 
-object ZipTagLauncher {
+object ZipTagLauncher extends Logger {
   val lookUp = esFetchRepoIdAndTags
+  var listOfFolders: List[String] = _
 
-  def main(args: Array[String]): Unit = {
-    val listOfFiles = listFiles(args(0))
+
+  def main(args: Array[String]) = {
+    val listOfFolders = listFolders(args(0))
+    listOfFolders.foreach { folder =>
+        val actorSystem = initActorSystem()
+        start(folder._1, actorSystem, folder._2)
+        actorSystem.awaitTermination()
+      log.info(s">> Batch $folder completed !")
+    }
+  }
+
+  def listFolders(batchDirectory: String) = {
+    new File(batchDirectory).listFiles().filter(_.isDirectory).map(x=> (x.getAbsolutePath, x.getName.toInt)).sortBy(_._2).toList
+  }
+
+  def start(batchFolder: String, actorSystem: ActorSystem, batch: Int): Unit = {
+    val listOfFiles = listFiles(batchFolder)
     val listOfRepoNameVsPath = listOfFiles.flatMap(tupleOfRepoNameVsPath)
     val listOfRepoWork = listOfRepoNameVsPath.map(toRepoWork)
-    val master = initActorSystem(listOfRepoWork.size)
-    master ! Work(listOfRepoWork)
+    val master = initZipTagMaster(listOfRepoWork.size, batch.toString, actorSystem)
+    master ! TotalWork(listOfRepoWork)
+    log.info(s"Number of repos ${listOfRepoWork.size}")
   }
 
-  private def initActorSystem(numOfRepos: Int) = {
-    val rawConfig = """akka {
-                      |  loglevel = "INFO"
-                      |  actor {
-                      |    provider = "akka.remote.RemoteActorRefProvider"
-                      |  }
-                      |  remote {
-                      |    enabled-transports = ["akka.remote.netty.tcp"]
-                      |    netty.tcp {
-                      |      hostname = "127.0.0.1"
-                      |      port = 2552
-                      |    }
-                      |    log-sent-messages = on
-                      |    log-received-messages = on
-                      |  }
-                      |}""".stripMargin
+  private def initActorSystem() = ActorSystem("ZipForEachTag")
 
-    val config = ConfigFactory.parseString(rawConfig)
-    val actorSystem = ActorSystem("ZipForEachTag", config)
-    val numOfWorkers = numOfRepos
-    val numOfReposPerWorker = 1
-    actorSystem.actorOf(Props(new ZipTagMaster(numOfWorkers,
-      numOfReposPerWorker)), name = "ZipTagMaster")
-  }
+  private def initZipTagMaster(numOfRepos: Int, batch: String, actorSystem: ActorSystem) =
+    actorSystem.actorOf(Props(new ZipTagMaster(batch)), name = "ZipTagMaster")
 
   private def toRepoWork(tupleOfRepoNameVsPath: (RepoFileNameInfo, String)) = {
     val repoFileNameInfo = tupleOfRepoNameVsPath._1
@@ -81,10 +77,10 @@ object ZipTagLauncher {
       esMap.get("id").get.toString.toInt -> esMap.get("tag").get.toString
 
     val clusterName = "kodebeagle1"
-    val hostName = "172.16.12.21"
-    val port = 9300
+    val hostName = "192.168.2.77"
+    val port = 9301
     val size = 1000
-    val client = new TransportClient(ImmutableSettings.settingsBuilder()/*.put("cluster.name", clusterName)*/
+    val client = new TransportClient(ImmutableSettings.settingsBuilder() /*.put("cluster.name", clusterName)*/
       .put("client.transport.sniff", true).build()).addTransportAddress(new InetSocketTransportAddress(hostName, port))
 
     val searchResponse = client.prepareSearch("repo")
@@ -92,8 +88,10 @@ object ZipTagLauncher {
       .setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery()))
       .setSize(size).get()
 
-    searchResponse.getHits.getHits.map(_.getSource.toMap)
+    val lookUp = searchResponse.getHits.getHits.map(_.getSource.toMap)
       .toList.map(transformMap).groupBy(_._1)
       .mapValues(x => x.map(_._2).toSet)
+    client.close()
+    lookUp
   }
 }

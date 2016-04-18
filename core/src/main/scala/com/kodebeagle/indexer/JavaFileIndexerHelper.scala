@@ -22,7 +22,12 @@ object JavaFileIndexerHelper {
 
   def fileNameToURL(repo: Repository, f: String): String = {
     val (_, actualFileName) = f.splitAt(f.indexOf('/'))
-    s"""${repo.login}/${repo.name}/blob/${repo.defaultBranch}$actualFileName"""
+    val branchOrTag = if(repo.tag == "HEAD") {
+      repo.defaultBranch
+    } else {
+      repo.tag
+    }
+    s"""${repo.login}/${repo.name}/blob/$branchOrTag$actualFileName"""
   }
 
   def isTestFile(imports: Set[(String, String)]): Boolean = {

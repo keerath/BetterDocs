@@ -151,9 +151,9 @@ object JsParser extends Logger {
       if (mayBeAstRoot.isSuccess) {
         val types = getTypes(mayBeAstRoot.get).toSet
         val gitFileName = JavaFileIndexerHelper.fileNameToURL(repo, tupleOfNameContent._1)
-        ExternalTypeReference(repo.id, gitFileName, types, repo.stargazersCount)
+        ExternalTypeReference(repo.id, gitFileName, types, repo.stargazersCount, repo.tag)
       } else {
-        ExternalTypeReference(-1, "", Set[ExternalType](), -1)
+        ExternalTypeReference(-1, "", Set[ExternalType](), -1, "")
       }
     }.filter(x => x.types.nonEmpty).toSet
   }

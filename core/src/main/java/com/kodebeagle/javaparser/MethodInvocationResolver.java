@@ -85,6 +85,7 @@ public class MethodInvocationResolver extends TypeResolver {
 		if (td.getSuperclassType() != null) {
 			superType = getFullyQualifiedNameFor(removeSpecialSymbols(td.getSuperclassType().toString()));
 		}
+
 		interfacesFullyQualifiedName.addAll(Arrays.<Object>asList(td.superInterfaceTypes().toArray()));
 		typesInFile.add(td.getName().getFullyQualifiedName());
 		String type = removeSpecialSymbols(td.getName().getFullyQualifiedName());
@@ -92,6 +93,7 @@ public class MethodInvocationResolver extends TypeResolver {
 		typeDeclarations.add(obj);
 		return true;
 	}
+
 
 	public Map<String, String> getTypes() {
 		return types;
@@ -139,7 +141,6 @@ public class MethodInvocationResolver extends TypeResolver {
 			MethodInvokRef methodInvokRef = new MethodInvokRef(node.getType().toString(), type, "", args
 					.size(), node.getStartPosition(), argTypes, node.getLength());
 			invoks.add(methodInvokRef);
-			currentMethodInvokRef = methodInvokRef;
 		}
 		return super.visit(node);
 	}
@@ -166,7 +167,6 @@ public class MethodInvocationResolver extends TypeResolver {
 			MethodInvokRef methodInvokRef = new MethodInvokRef(methodName.toString(), targetType, target, args
 					.size(), node.getName().getStartPosition(), argTypes, methodName.getLength());
 			invoks.add(methodInvokRef);
-			currentMethodInvokRef = methodInvokRef;
 		}
 		return true;
 	}

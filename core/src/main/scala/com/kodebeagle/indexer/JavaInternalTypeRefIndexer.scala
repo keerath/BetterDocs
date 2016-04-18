@@ -21,6 +21,7 @@ import com.kodebeagle.indexer.JavaFileIndexerHelper._
 import com.kodebeagle.parser.MethodVisitor
 
 import scala.collection.immutable
+import scala.util.Try
 
 class JavaInternalTypeRefIndexer extends JavaExternalTypeRefIndexer {
 
@@ -59,8 +60,8 @@ class JavaInternalTypeRefIndexer extends JavaExternalTypeRefIndexer {
   }
 
   private def toInternalHighlighters(lines: Array[String], highlighters: List[ExternalLine]) = {
-    highlighters.map(highlighter => InternalLine(lines(highlighter.lineNumber - 1),
+    highlighters.map(highlighter => Try(InternalLine(lines(highlighter.lineNumber - 1),
       highlighter.lineNumber, highlighter.startColumn,
-      highlighter.endColumn))
+      highlighter.endColumn))).filter(_.isSuccess).map(_.get)
   }
 }

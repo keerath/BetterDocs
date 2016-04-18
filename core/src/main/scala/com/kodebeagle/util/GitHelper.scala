@@ -11,6 +11,7 @@ class GitHelper(gitRepoPath: String) {
 
   private val repository = buildRepository(gitRepoPath)
   private val git = new Git(repository)
+  private val defaultBranch = repository.getBranch
 
   private def buildRepository(repoPath: String) = {
     val repositoryBuilder = new FileRepositoryBuilder
@@ -18,18 +19,22 @@ class GitHelper(gitRepoPath: String) {
   }
 
   def stashChanges(): Unit = {
-    git.stashCreate().call()
+    git.stashCreate().setIncludeUntracked(true).call()
   }
 
   def checkoutTag(tag: String): Unit = {
-    git.checkout.setForce(true).setName(tag).call()
+    if (tag == "HEAD") {
+      git.checkout().setForce(true).setName(defaultBranch).call()
+    } else {
+      git.checkout.setForce(true).setName(tag).call()
+    }
   }
 
   def getTagsToIndex(indexedTags: Set[String]): Set[String] = {
     if (indexedTags.isEmpty) {
-      getGitTags + repository.getBranch
+      getGitTags + "HEAD"
     } else {
-      getGitTags.diff(indexedTags.filterNot(_ == repository.getBranch))
+      getGitTags.diff(indexedTags.filterNot(_ == "HEAD"))
     }
   }
 

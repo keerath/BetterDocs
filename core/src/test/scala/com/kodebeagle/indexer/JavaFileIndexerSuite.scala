@@ -61,7 +61,7 @@ class JavaASTBasedIndexerForMethodsSuite extends FunSuite with BeforeAndAfterAll
         List(ExternalLine(204, 28, 34)), Set(Property("remoteAddress",
           List(ExternalLine(204, 28, 50))))),
         ExternalType(importObjects, List(ExternalLine(203, 12, 18))
-          , Set(Property("toStringHelper", List(ExternalLine(203, 12, 39)))))), 0),
+          , Set(Property("toStringHelper", List(ExternalLine(203, 12, 39)))))), 0, ""),
 
       ExternalTypeReference(-1, sampleFile, Set(ExternalType(importTimeUnit,
         List(ExternalLine(187, 36, 43)), Set()), ExternalType(importEE,
@@ -74,24 +74,24 @@ class JavaASTBasedIndexerForMethodsSuite extends FunSuite with BeforeAndAfterAll
           ExternalLine(177, 9, 14)), Set(Property("set", List(ExternalLine(177, 9, 28))),
           Property("get", List(ExternalLine(187, 14, 57))), Property("create",
             List(ExternalLine(172, 43, 65))), Property("setException",
-            List(ExternalLine(182, 9, 30)))))), 0),
+            List(ExternalLine(182, 9, 30)))))), 0, ""),
 
       ExternalTypeReference(-1, sampleFile, Set(ExternalType(importTimeUnit,
         List(ExternalLine(198, 46, 53)), Set()), ExternalType(importChannel,
         List(ExternalLine(198, 5, 11)), Set(Property("close",
-          List(ExternalLine(198, 5, 19)))))), 0),
+          List(ExternalLine(198, 5, 19)))))), 0, ""),
 
       ExternalTypeReference(-1, sampleFile, Set(ExternalType(importXMLAnnotation,
         List(ExternalLine(78, 4, 18)), Set()), ExternalType("io.netty.channel.Channel",
         List(ExternalLine(79, 12, 18), ExternalLine(79, 32, 38)), Set(Property("isOpen",
           List(ExternalLine(79, 12, 27))), Property("isActive",
-          List(ExternalLine(79, 32, 49)))))), 0),
+          List(ExternalLine(79, 32, 49)))))), 0, ""),
 
       ExternalTypeReference(-1, sampleFile, Set(ExternalType(importChannel,
         List(ExternalLine(74, 10, 16), ExternalLine(74, 47, 53)), Set()),
         ExternalType(importPrecon, List(ExternalLine(74, 20, 32), ExternalLine(75, 20, 32)),
         Set(Property("checkNotNull", List(ExternalLine(74, 20, 54), ExternalLine(75, 20, 54)))))),
-        0),
+        0, ""),
 
       ExternalTypeReference(-1, sampleFile,
         Set(ExternalType(importCFReq, List(ExternalLine(108, 31, 47)), Set()),
@@ -114,7 +114,7 @@ class JavaASTBasedIndexerForMethodsSuite extends FunSuite with BeforeAndAfterAll
             ExternalLine(118, 27, 32), ExternalLine(119, 36, 41), ExternalLine(123, 72, 77)),
             Set(Property("cause", List(ExternalLine(118, 27, 40), ExternalLine(119, 36, 49),
               ExternalLine(123, 72, 85))), Property("isSuccess",
-              List(ExternalLine(112, 15, 32)))))), 0), ExternalTypeReference(-1, sampleFile,
+              List(ExternalLine(112, 15, 32)))))), 0, ""), ExternalTypeReference(-1, sampleFile,
         Set(ExternalType(importUUID, List(ExternalLine(141, 37, 40)),
           Set(Property("randomUUID", List(ExternalLine(141, 37, 53))))),
           ExternalType(importIOE, List(ExternalLine(158, 38, 48)), Set()),
@@ -134,7 +134,7 @@ class JavaASTBasedIndexerForMethodsSuite extends FunSuite with BeforeAndAfterAll
             Set(Property("cause", List(ExternalLine(153, 27, 40), ExternalLine(154, 36, 49),
               ExternalLine(158, 60, 73))), Property("isSuccess",
               List(ExternalLine(148, 15, 32))))), ExternalType(importChannel + "FutureListener",
-            List(ExternalLine(145, 11, 31)), Set())), 0)
+            List(ExternalLine(145, 11, 31)), Set())), 0, "")
     )
 
     assert(methodTokens === testMethodTokens)

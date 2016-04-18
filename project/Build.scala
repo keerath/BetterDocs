@@ -23,7 +23,7 @@ import de.johoop.findbugs4sbt.FindBugs._
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyKeys._
-import sbtassembly.{AssemblyPlugin, MergeStrategy}
+import sbtassembly.{ShadeRule, AssemblyPlugin, MergeStrategy}
 
 object KodeBeagleBuild extends Build {
 
@@ -79,7 +79,7 @@ object KodeBeagleBuild extends Build {
   }
 
   def scalaPluginSettings =  Seq(
-    scalaVersion := "2.11.6",
+    scalaVersion := "2.10.5",
     libraryDependencies += "org.scala-lang" % "scala-library" % scalaVersion.value % "provided"
   )
 
@@ -106,41 +106,46 @@ object KodeBeagleBuild extends Build {
   def pluginTestSettings = pluginSettings ++ Seq(
     name := "plugin-test",
     libraryDependencies ++= Dependencies.ideaPluginTest,
-    autoScalaLibrary := true,
-    scalaVersion := "2.11.6")
+    autoScalaLibrary := false,
+    scalaVersion := "2.10.4")
 
   def coreSettings = kodebeagleSettings ++ Seq(libraryDependencies ++= Dependencies.kodebeagle) ++ Seq(assemblyMergeStrategy in assembly := {
     case "plugin.properties" | "plugin.xml" | ".api_description" | "META-INF/eclipse.inf" | ".options" => MergeStrategy.first
     case x =>
       val oldStrategy = (assemblyMergeStrategy in assembly).value
       oldStrategy(x)
-  })
+  }) /*assemblyShadeRules in assembly := Seq(ShadeRule.rename("org.apache.commons.**" -> "shadeio.apache.commons").inLibrary("org.apache.hadoop" % "hadoop-common" % "2.7.2").inProject)*//* ++ Seq(assemblyShadeRules in assembly)*/
+
+
 
   def kodebeagleSettings =
     Defaults.coreDefaultSettings ++ Seq(
+      scalaVersion := "2.11.6",
+      /*ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },*/
       name := "KodeBeagle",
       organization := "com.kodebeagle",
       git.baseVersion := "0.1.0",
-      scalaVersion := "2.10.4",
+      autoScalaLibrary := false,
       git.useGitDescribe := true,
       scalacOptions := scalacOptionsList,
       //resolvers += Resolver.mavenLocal,
-      resolvers += "Job Server Bintray" at "https://dl.bintray.com/spark-jobserver/maven",
       updateOptions := updateOptions.value.withCachedResolution(true),
       updateOptions := updateOptions.value.withLatestSnapshots(false),
       crossPaths := false,
       fork := true,
       javacOptions ++= Seq("-source", "1.7"),
       javaOptions += "-Xmx6048m",
-      javaOptions += "-XX:+HeapDumpOnOutOfMemoryError"
+      javaOptions += "-XX:+HeapDumpOnOutOfMemoryError",
+      test in assembly := {}
     )
 }
 
+
 object Dependencies {
 
-  val scalastyle = "org.scalastyle" %% "scalastyle" % "0.7.0"
+  val scalastyle = "org.scalastyle" %% "scalastyle" % "0.8.0"
   // Needed for scala parsing.
-  val spark = "org.apache.spark" %% "spark-core" % "1.4.1"
+  val spark = "org.apache.spark" %% "spark-core" % "1.6.1" /* % "provided"*/
   //"org.apache.spark" %% "spark-core" % "1.3.1" // % "provided" Provided makes it not run through sbt run.
   val scalaTest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
   val slf4j = "org.slf4j" % "slf4j-log4j12" % "1.7.10"
@@ -151,33 +156,35 @@ object Dependencies {
   val config = "com.typesafe" % "config" % "1.2.1"
   val jgit = "org.eclipse.jgit" % "org.eclipse.jgit" % "3.7.0.201502260915-r" intransitive()
   val commonsIO = "commons-io" % "commons-io" % "2.4"
-  val esSpark = "org.elasticsearch" % "elasticsearch-spark_2.10" % "2.2.0"
+  val esSpark = ("org.elasticsearch" % "elasticsearch-spark_2.11" % "2.2.0")
+    .exclude("org.apache.spark", "spark-sql_2.11").exclude("org.apache.spark", "spark-core_2.11")
   val guava = "com.google.guava" % "guava" % "18.0"
   val elasticSearch = "org.elasticsearch" % "elasticsearch" % "1.7.1"
-  val akka = "com.typesafe.akka" % "akka-actor_2.10" % "2.3.14"
-  val akkaRemote = "com.typesafe.akka" % "akka-remote_2.10" % "2.3.14"
+  val akka = "com.typesafe.akka" % "akka-actor_2.11" % "2.4.0"
   val compress = "org.apache.commons" % "commons-compress" % "1.10"
-  val graphx = "org.apache.spark" %% "spark-graphx" % "1.4.1"
+  val graphx = "org.apache.spark" %% "spark-graphx" % "1.6.1" /* % "provided"*/
+  val zip4j = "net.lingala.zip4j" % "zip4j" % "1.3.2"
   val junit = "junit" % "junit" % "4.12"
   val rhino = "org.mozilla" % "rhino" % "1.7R4"
-
+  val hdfs = ("org.apache.hadoop" % "hadoop-hdfs" % "2.6.0").excludeAll(ExclusionRule(organization = "javax.servlet"))/*.excludeAll(ExclusionRule(organization = "asm"))*/
+  val hadoopcommon = ("org.apache.hadoop" % "hadoop-common" % "2.6.0").excludeAll(ExclusionRule(organization = "javax.servlet"))/*.excludeAll(ExclusionRule(organization = "asm"), ExclusionRule(organization = "commons-beanutils"))*/
   //Eclipse dependencies for Tassal libs
   object EclipseDeps {
-    val tycho = "org.eclipse.tycho" % "org.eclipse.jdt.core" % "3.10.0.v20140604-1726"
-    val contentType = "org.eclipse.birt.runtime" % "org.eclipse.core.contenttype" % "3.4.200.v20130326-1255"
-    val coreJobs = "org.eclipse.birt.runtime" % "org.eclipse.core.jobs" % "3.5.300.v20130429-1813"
-    val coreResources = "org.eclipse.birt.runtime" % "org.eclipse.core.resources" % "3.8.101.v20130717-0806"
-    val coreRT = "org.eclipse.birt.runtime" % "org.eclipse.core.runtime" % "3.9.0.v20130326-1255"
-    val eqCommon = "org.eclipse.birt.runtime" % "org.eclipse.equinox.common" % "3.6.200.v20130402-1505"
-    val eqPref = "org.eclipse.birt.runtime" % "org.eclipse.equinox.preferences" % "3.5.100.v20130422-1538"
-    val eqReg = "org.eclipse.birt.runtime" % "org.eclipse.equinox.registry" % "3.5.301.v20130717-1549"
-    val osgi = "org.eclipse.birt.runtime" % "org.eclipse.osgi" % "3.9.1.v20130814-1242"
-    val text = "org.eclipse.text" % "org.eclipse.text" % "3.5.101"
+    val tycho = "org.eclipse.tycho" % "org.eclipse.jdt.core" % "3.10.0.v20140604-1726" intransitive()
+    val contentType = "org.eclipse.birt.runtime" % "org.eclipse.core.contenttype" % "3.4.200.v20130326-1255" intransitive()
+    val coreJobs = "org.eclipse.birt.runtime" % "org.eclipse.core.jobs" % "3.5.300.v20130429-1813" intransitive()
+    val coreResources = "org.eclipse.birt.runtime" % "org.eclipse.core.resources" % "3.8.101.v20130717-0806" intransitive()
+    val coreRT = "org.eclipse.birt.runtime" % "org.eclipse.core.runtime" % "3.9.0.v20130326-1255" intransitive()
+    val eqCommon = "org.eclipse.birt.runtime" % "org.eclipse.equinox.common" % "3.6.200.v20130402-1505" intransitive()
+    val eqPref = "org.eclipse.birt.runtime" % "org.eclipse.equinox.preferences" % "3.5.100.v20130422-1538" intransitive()
+    val eqReg = "org.eclipse.birt.runtime" % "org.eclipse.equinox.registry" % "3.5.301.v20130717-1549" intransitive()
+    val osgi = "org.eclipse.birt.runtime" % "org.eclipse.osgi" % "3.9.1.v20130814-1242" intransitive()
+    val text = "org.eclipse.text" % "org.eclipse.text" % "3.5.101" intransitive()
 
     val allDeps = Seq(tycho, contentType, coreJobs, coreResources, coreRT, eqCommon, eqPref, eqReg, osgi, text)
   }
 
-  val kodebeagle = Seq(akka, akkaRemote, httpClient, scalastyle, spark, scalaTest, slf4j, javaparser, json4s, config,
+  val kodebeagle = Seq(akka, zip4j, hdfs, hadoopcommon, httpClient, scalastyle, spark, scalaTest, slf4j, javaparser, json4s, config,
     json4sJackson, jgit, commonsIO, esSpark, graphx, guava, compress, junit, rhino, elasticSearch) ++ EclipseDeps.allDeps
 
   val ideaPluginTest = Seq(scalaTest, commonsIO)

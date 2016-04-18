@@ -290,6 +290,6 @@ class ZipParserTest extends FunSuite {
     val repoFileNameInfo = RepoFileNameParser(zipName)
     val (_, _, _, repository) = readFilesAndPackages(repoFileNameInfo, new ZipInputStream(stream))
     assert(repository.get == Repository("Cascading", 576623, "cascading-dbmigrate",
-      false, "Java", "master", 65, 843, 8, 33))
+      false, "Java", "master", 65, 843, 8, 33, ""))
   }
 }

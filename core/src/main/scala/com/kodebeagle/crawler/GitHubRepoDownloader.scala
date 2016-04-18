@@ -18,6 +18,8 @@
 package com.kodebeagle.crawler
 
 
+import java.io.File
+
 import akka.actor.{Actor, ActorSystem, Props}
 import com.kodebeagle.configuration.KodeBeagleConfig
 import com.kodebeagle.logging.Logger
