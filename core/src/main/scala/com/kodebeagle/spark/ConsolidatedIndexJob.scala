@@ -46,8 +46,7 @@ object ConsolidatedIndexJob {
 
     val sc: SparkContext = createSparkContext(conf)
 
-    val zipFileExtractedRDD: RDD[(List[(String, String)], List[(String, String)],
-      Option[Repository], List[String])] = makeZipFileExtractedRDD(sc)
+    val zipFileExtractedRDD: RDD[Input] = makeZipFileExtractedRDD(sc)
 
     val javaInternalIndexer = new JavaInternalTypeRefIndexer()
     val javaExternalIndexer = new JavaExternalTypeRefIndexer()
@@ -60,11 +59,10 @@ object ConsolidatedIndexJob {
     val broadCast = sc.broadcast(new JavaASTParser(true))
 
     //  Create indexes for elastic search.
-    zipFileExtractedRDD.map { f =>
-      val (javaFiles, scalaFiles, repo, packages) = f
-      val javaScalaTypeRefs =
-        generateAllIndices(Input(javaFiles, scalaFiles, repo, packages))
-      val sourceFiles = mapToSourceFiles(repo, javaFiles ++ scalaFiles)
+    zipFileExtractedRDD.map { input =>
+      val javaScalaTypeRefs = generateAllIndices(input)
+      val repo = input.repo
+      val sourceFiles = mapToSourceFiles(repo, input.scalaFiles ++ input.javaFiles)
       (repo, javaScalaTypeRefs.javaInternal, javaScalaTypeRefs.javaExternal,
         javaScalaTypeRefs.scalaInternal, javaScalaTypeRefs.scalaExternal,
         FileMetaDataIndexer.generateMetaData(sourceFiles, broadCast),
