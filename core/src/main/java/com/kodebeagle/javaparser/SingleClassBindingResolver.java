@@ -18,14 +18,14 @@
 package com.kodebeagle.javaparser;
 
 import com.google.common.collect.Maps;
+import com.kodebeagle.indexer.SuperTypes;
 import com.kodebeagle.javaparser.MethodInvocationResolver.MethodDecl;
 import com.kodebeagle.javaparser.MethodInvocationResolver.MethodInvokRef;
-import org.eclipse.jdt.core.dom.ASTNode;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -149,5 +149,13 @@ public class SingleClassBindingResolver {
 
     public void resolve() {
         rootNode.accept(resolver);
+    }
+
+    public Map<String, SuperTypes> getClassNameVsSuperTypes() {
+        return resolver.getClassNameVsSuperTypes();
+    }
+
+    public String rmSpecialSymbols(final String type) {
+        return resolver.removeSpecialSymbols(type);
     }
 }

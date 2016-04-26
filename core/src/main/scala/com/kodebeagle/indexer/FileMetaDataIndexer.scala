@@ -18,18 +18,18 @@
 package com.kodebeagle.indexer
 
 import java.util
+import java.util.{List => JList}
 
 import com.kodebeagle.javaparser.JavaASTParser.ParseType
 import com.kodebeagle.javaparser.{JavaASTParser, MethodInvocationResolver, SingleClassBindingResolver}
 import com.kodebeagle.logging.Logger
-import org.apache.spark.broadcast.Broadcast
 import org.eclipse.jdt.core.dom.{ASTNode, CompilationUnit}
 
 import scala.collection.mutable
 
 case class RepoSource(repoId: Long, fileName: String, fileContent: String)
 
-case class TypeDeclaration(fileType: String, loc: String)
+case class TypeDeclaration(fileType: String, loc: String, superTypes: SuperTypes)
 
 case class ExternalRef(id: Int, fqt: String)
 
@@ -41,9 +41,9 @@ case class MethodDefinition(loc: String, method: String, argTypes: List[String])
 
 case class InternalRef(childLine: String, parentLine: String)
 
-case class SuperTypes(superClass: String, interfaces: List[String])
+case class SuperTypes(superClass: String, interfaces: JList[Object])
 
-case class FileMetaData(repoId: Long, fileName: String, superTypes: SuperTypes,
+case class FileMetaData(repoId: Long, fileName: String,
                         fileTypes: util.List[TypeDeclaration],
                         externalRefList: List[ExternalRef],
                         typeLocationList: List[VarTypeLocation],
@@ -80,8 +80,7 @@ object FileMetaDataIndexer extends Logger {
       // internal references
       val internalRefsList = getInternalRefs(unit, resolver)
       val fileTypes = getFileTypes(unit, resolver)
-      val superTypes = SuperTypes(resolver.getSuperType, resolver.getInterfaces.toList)
-      indexEntry += FileMetaData(source.repoId, source.fileName, superTypes, fileTypes.toList,
+      indexEntry += FileMetaData(source.repoId, source.fileName, fileTypes.toList,
         externalRefsList.toList, typeLocationVarList.toList ++ importLocationList.toList,
         typeLocationMethodList.toList, methodDefinitionList.toList, internalRefsList.toList)
     } else {
@@ -109,18 +108,18 @@ object FileMetaDataIndexer extends Logger {
 
     val imports = resolver.getImportsDeclarationNode.values()
     externalRefs ++ imports
-
-    val idVsExternalRefs = externalRefs.zipWithIndex.toMap
-    idVsExternalRefs
+    externalRefs.map(resolver.rmSpecialSymbols).zipWithIndex.toMap
   }
 
   def getFileTypes(unit: CompilationUnit, resolver: SingleClassBindingResolver):
   mutable.Buffer[TypeDeclaration] = {
     val types: util.Map[String, String] = resolver.getClassesInFile
+    val superTypes = resolver.getClassNameVsSuperTypes
     for (typeDeclaration <- resolver.getTypeDeclarations) yield {
       TypeDeclaration(types.get(typeDeclaration.getClassName),
         unit.getLineNumber(typeDeclaration.getLoc) + "#"
-          + unit.getColumnNumber(typeDeclaration.getLoc))
+          + unit.getColumnNumber(typeDeclaration.getLoc),
+        superTypes.get(typeDeclaration.getClassName))
     }
   }
 

@@ -17,6 +17,15 @@
 
 package com.kodebeagle.javaparser;
 
+import com.kodebeagle.indexer.SuperTypes;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
@@ -26,24 +35,15 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Stack;
-
 public class MethodInvocationResolver extends TypeResolver {
 
 	private Map<String, List<MethodInvokRef>> methodInvoks = new HashMap<String, List<MethodInvokRef>>();
 	private Stack<MethodDeclaration> methodStack = new Stack<MethodDeclaration>();
 	private List<MethodDecl> declaredMethods = new ArrayList<MethodDecl>();
 	private List<TypeDecl> typeDeclarations = new ArrayList<>();
-	private MethodInvokRef currentMethodInvokRef;
 	private static final String OBJECT_TYPE = "java.lang.Object";
-	protected Map<String,String> types = new HashMap();
+	protected Map<String, String> types = new HashMap();
+	private Map<String, SuperTypes> classNameVsSuperTypes = new HashMap<>();
 	protected Queue<String> typesInFile = new ArrayDeque<>();
 	protected String superType;
 	private List<Object> interfacesFullyQualifiedName = new ArrayList<Object>();
@@ -67,7 +67,7 @@ public class MethodInvocationResolver extends TypeResolver {
 
 	String type = "";
 
-	private String removeSpecialSymbols(final String pType) {
+	protected String removeSpecialSymbols(final String pType) {
 		String type = pType;
 		if (type != null && type.contains("<")) {
 			type = type.substring(0, type.indexOf("<"));
@@ -85,16 +85,24 @@ public class MethodInvocationResolver extends TypeResolver {
 		if (td.getSuperclassType() != null) {
 			superType = getFullyQualifiedNameFor(removeSpecialSymbols(td.getSuperclassType().toString()));
 		}
+
 		interfacesFullyQualifiedName.addAll(Arrays.<Object>asList(td.superInterfaceTypes().toArray()));
 		typesInFile.add(td.getName().getFullyQualifiedName());
+
+		SuperTypes superTypes = new SuperTypes(superType, td.superInterfaceTypes());
 		String type = removeSpecialSymbols(td.getName().getFullyQualifiedName());
 		TypeDecl obj = new TypeDecl(type, td.getName().getStartPosition());
 		typeDeclarations.add(obj);
+		classNameVsSuperTypes.put(type, superTypes);
 		return true;
 	}
 
 	public Map<String, String> getTypes() {
 		return types;
+	}
+
+	public Map<String, SuperTypes> getClassNameVsSuperTypes() {
+		return classNameVsSuperTypes;
 	}
 
 	@Override
@@ -139,7 +147,6 @@ public class MethodInvocationResolver extends TypeResolver {
 			MethodInvokRef methodInvokRef = new MethodInvokRef(node.getType().toString(), type, "", args
 					.size(), node.getStartPosition(), argTypes, node.getLength());
 			invoks.add(methodInvokRef);
-			currentMethodInvokRef = methodInvokRef;
 		}
 		return super.visit(node);
 	}
@@ -166,7 +173,6 @@ public class MethodInvocationResolver extends TypeResolver {
 			MethodInvokRef methodInvokRef = new MethodInvokRef(methodName.toString(), targetType, target, args
 					.size(), node.getName().getStartPosition(), argTypes, methodName.getLength());
 			invoks.add(methodInvokRef);
-			currentMethodInvokRef = methodInvokRef;
 		}
 		return true;
 	}
@@ -190,12 +196,12 @@ public class MethodInvocationResolver extends TypeResolver {
 			paramTypes.add(typeName);
 		}
 		declaredMethods.add(new MethodDecl(methodName, num, nameNode
-					.getStartPosition(), paramTypes));
+				.getStartPosition(), paramTypes));
 
 	}
 
 	protected String translateTargetToType(Expression expression,
-			Map<String, Integer> scopeBindings) {
+										   Map<String, Integer> scopeBindings) {
 		String targetType = "";
 		if (expression != null) {
 			String target = getTarget(expression);
@@ -219,7 +225,7 @@ public class MethodInvocationResolver extends TypeResolver {
 
 	private String getTarget(Expression expression) {
 		String target = "";
-		if(expression != null){
+		if (expression != null) {
 			target = expression.toString();
 			if (target.contains("this.")) {
 				target = StringUtils.substringAfter(target, "this.");
@@ -230,7 +236,7 @@ public class MethodInvocationResolver extends TypeResolver {
 
 	@SuppressWarnings("rawtypes")
 	protected List<String> translateArgsToTypes(List args,
-			Map<String, Integer> scopeBindings) {
+												Map<String, Integer> scopeBindings) {
 		List<String> argTypes = new ArrayList<String>();
 		for (Object o : args) {
 			String name = o.toString();
@@ -275,14 +281,14 @@ public class MethodInvocationResolver extends TypeResolver {
 		}
 	}
 
-		public static class MethodDecl {
+	public static class MethodDecl {
 		private String methodName;
 		private Integer argNum;
 		private Integer location;
 		private List<String> argTypes;
 
 		public MethodDecl(String methodName, Integer argNum, Integer location,
-				List<String> argTypes) {
+						  List<String> argTypes) {
 			super();
 			this.methodName = methodName;
 			this.argNum = argNum;
@@ -325,7 +331,7 @@ public class MethodInvocationResolver extends TypeResolver {
 		private List<String> argTypes;
 
 		private MethodInvokRef(String methodName, String targetType, String target,
-				Integer argNum, Integer location, List<String> argTypes, Integer length) {
+							   Integer argNum, Integer location, List<String> argTypes, Integer length) {
 			super();
 			this.methodName = methodName;
 			this.targetType = targetType;
@@ -333,11 +339,14 @@ public class MethodInvocationResolver extends TypeResolver {
 			this.location = location;
 			this.argTypes = argTypes;
 			this.target = target;
-			this.length =length;
+			this.length = length;
 
 		}
 
-		public Integer getLength() {return length; }
+		public Integer getLength() {
+			return length;
+		}
+
 		public String getMethodName() {
 			return methodName;
 		}
@@ -354,7 +363,7 @@ public class MethodInvocationResolver extends TypeResolver {
 			this.targetType = targetType;
 		}
 
-		
+
 		public String getTarget() {
 			return target;
 		}

@@ -87,7 +87,6 @@ object SparkIndexJobHelper {
     rdd
   }
 
-
   def createRepoIndex(rdd: RDD[(String, (String, String))],
                       batch: String): Map[String, (Option[Repository], List[String])]  = {
     val aggregateRDD = rdd
@@ -158,6 +157,5 @@ object SparkIndexJobHelper {
       s"""|{ "index" : { "_index" : "$indexName", "_type" : "type$indexName" } }
           |""".stripMargin + write(t)
     } else "" + write(t)
-
   }
 }

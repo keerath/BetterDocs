@@ -19,6 +19,9 @@ package com.kodebeagle.javaparser;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayType;
@@ -38,10 +41,6 @@ import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WildcardType;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * This class does the following -
@@ -149,7 +148,7 @@ public class TypeResolver extends ASTVisitor {
 	 * @param name
 	 */
 	private void addBinding(final ASTNode node, final SimpleName name,
-			final Type type) {
+							final Type type) {
 		final int bindingId = nextVarId;
 		nextVarId++;
 		nodeScopes.get(node).put(name.getIdentifier(), bindingId);
@@ -167,7 +166,7 @@ public class TypeResolver extends ASTVisitor {
 	 * Add the binding data for the given name at the given scope and position.
 	 */
 	private void addBindingData(final String name, final ASTNode nameNode,
-			final Map<String, Integer> scopeBindings) {
+								final Map<String, Integer> scopeBindings) {
 		// Get varId or abort
 		final Integer variableId = scopeBindings.get(name);
 		if (variableId == null || !variableBinding.containsKey(variableId)) {
@@ -193,8 +192,10 @@ public class TypeResolver extends ASTVisitor {
 			}
 		}
 
-		if(className != null && className.charAt(0) >=97
-				&& className.charAt(0) <= 122 && className.contains(".")) {
+		if(className != null && className.contains(".")) {
+			return className;
+		}
+		if(currentPackage.isEmpty()) {
 			return className;
 		}
 		return currentPackage + "." + className;
@@ -205,7 +206,7 @@ public class TypeResolver extends ASTVisitor {
 	 * @return
 	 */
 	protected String getNameOfType(final Type type) {
-		 String nameOfType = "";
+		String nameOfType = "";
 		if (type != null) {
 			if (type.isPrimitiveType()) {
 				nameOfType = type.toString();
