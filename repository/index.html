@@ -86,21 +86,15 @@ basepath: ../
                     "must": [
                         {
                             "term": {
-                                "typerepotopic.repository.repoId": repoId
+                                "repository.repoId": repoId
                             }
                         }
-                    ],
-                    "must_not": [ ],
-                    "should": [ ]
+                    ]
                     }
-                },
-                "from": 0,
-                "size": 10,
-                "sort": [ ],
-                "facets": { }
+                }
             };
 
-            http.get( model.config.esURL + '/repotopic/_search?size=50&source=' +JSON.stringify( query ) )
+            http.get( model.config.esURL + '/repotopic/typerepotopic/_search?source=' +JSON.stringify( query ) )
             .then( function( res ) {
                 $scope.item = {};
                 $scope.item.repository = res.hits.hits[0]._source.repository;

@@ -77,7 +77,6 @@
         var returnObj = {};
         returnObj.bool = {};
         returnObj.bool[ key ] = mustTerms;
-        returnObj.bool.must_not = [];
         if( key === 'should' ) {
           returnObj.bool.must = [];
         } else {
@@ -534,18 +533,16 @@
           ;
 
         correctedQuery = buildSearchString( obj.queryString );
-        queryBlock = getQuery(correctedQuery, 'typerepotopic.terms.term', 'must' );
+        queryBlock = getQuery(correctedQuery, 'terms.term', 'must' );
 
         queryES(
           {
             indexName: 'repotopic',
-            methodName:'',
+            methodName:'/typerepotopic',
             queryBody: {
               'query': queryBlock,
               "from": 0,
-              "size": 10,
-              "sort": [],
-              "facets": {}
+              "size": 10
             },
             callbackObj: {
             },
