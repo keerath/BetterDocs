@@ -78,7 +78,7 @@ object KodeBeagleBuild extends Build {
     }
   }
 
-  def scalaPluginSettings =  Seq(
+  def scalaPluginSettings = Seq(
     scalaVersion := "2.11.6",
     libraryDependencies += "org.scala-lang" % "scala-library" % scalaVersion.value % "provided"
   )
@@ -158,6 +158,7 @@ object Dependencies {
   val graphx = "org.apache.spark" % "spark-graphx_2.11" % "1.4.1"
   val junit = "junit" % "junit" % "4.12"
   val rhino = "org.mozilla" % "rhino" % "1.7R4"
+  val jsoup = "org.jsoup" % "jsoup" % "1.9.1"
 
   //Eclipse dependencies for Tassal libs
   object EclipseDeps {
@@ -175,7 +176,7 @@ object Dependencies {
     val allDeps = Seq(tycho, contentType, coreJobs, coreResources, coreRT, eqCommon, eqPref, eqReg, osgi, text)
   }
 
-  val kodebeagle = Seq(akka, httpClient, scalastyle, spark, parserCombinator, scalaTest, slf4j, javaparser, json4s, config,
+  val kodebeagle = Seq(akka, httpClient, scalastyle, jsoup, spark, parserCombinator, scalaTest, slf4j, javaparser, json4s, config,
     json4sJackson, jgit, commonsIO, esSpark, graphx, guava, compress, junit, rhino) ++ EclipseDeps.allDeps
 
   val ideaPluginTest = Seq(scalaTest, commonsIO)

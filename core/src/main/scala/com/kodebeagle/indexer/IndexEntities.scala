@@ -73,7 +73,6 @@ case class Property(propertyName: String, lines: List[Line])
 case class Token(importName: String, importExactName: String,
                  lineNumbers: immutable.Set[ExternalLine])
 
-
 case class SourceFile(repoId: Int, fileName: String, fileContent: String)
 
 case class RepoFileNameInfo(login: String, id: Int, name: String, fork: Boolean, language: String,
