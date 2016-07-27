@@ -19,7 +19,7 @@ package com.kodebeagle.parser
 
 import com.kodebeagle.indexer.{ExternalLine, ExternalType, ExternalTypeReference, Property, Repository}
 import com.kodebeagle.logging.Logger
-import com.kodebeagle.spark.util.SparkIndexJobHelper
+import com.kodebeagle.util.SparkIndexJobHelper
 import org.mozilla.javascript.ast.{AstNode, AstRoot, ErrorCollector, FunctionCall, NodeVisitor, PropertyGet, VariableInitializer}
 import org.mozilla.javascript.{CompilerEnvirons, IRFactory}
 

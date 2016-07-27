@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.kodebeagle.spark.job
+package com.kodebeagle.spark
 
 import java.io.{File, PrintWriter}
 
@@ -24,7 +24,7 @@ import com.kodebeagle.indexer.SourceFile
 import com.kodebeagle.logging.Logger
 import com.kodebeagle.model.GithubRepo.GithubRepoInfo
 import com.kodebeagle.model.{GithubRepo, JavaRepo}
-import com.kodebeagle.spark.util.SparkIndexJobHelper._
+import com.kodebeagle.util.SparkIndexJobHelper._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.broadcast.Broadcast

@@ -20,6 +20,7 @@ package com.kodebeagle.parser
 import java.io.{FileReader, InputStream, StringWriter}
 
 import com.kodebeagle.indexer.{ExternalLine, ExternalType, Property, RepoFileNameInfo}
+import com.kodebeagle.util.RepoFileNameParser
 import org.apache.commons.io.IOUtils
 import org.mozilla.javascript.ast.ErrorCollector
 import org.mozilla.javascript.{CompilerEnvirons, IRFactory}

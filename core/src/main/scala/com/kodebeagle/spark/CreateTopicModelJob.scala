@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package com.kodebeagle.spark.job
+package com.kodebeagle.spark
 
-import java.util
 import java.util.ArrayList
 
 import codemining.java.codeutils.JavaASTExtractor
 import codemining.languagetools.ParseType
 import codesum.lm.main.ASTVisitors.TreeCreatorVisitor
 import codesum.lm.main.Settings
+import com.kodebeagle.util.SparkIndexJobHelper._
 import com.kodebeagle.configuration.{KodeBeagleConfig, TopicModelConfig}
 import com.kodebeagle.logging.Logger
 import com.kodebeagle.ml.{DistributedLDAModel, LDA}
-import com.kodebeagle.spark.util.SparkIndexJobHelper._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.eclipse.jdt.core.dom.CompilationUnit
 import org.elasticsearch.spark._
+
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -211,7 +211,7 @@ object CreateTopicModelJob extends Logger {
     }).flatMap({
       case (fileName, (repoId, fileContent)) =>
         val paragraphListTry = Try(getParagraphForFile(fileContent))
-        var paragraphList: util.List[String] = new util.ArrayList[String]()
+        var paragraphList: java.util.List[String] = new java.util.ArrayList[String]()
         if (paragraphListTry.isSuccess) {
           paragraphList = paragraphListTry.get
         }

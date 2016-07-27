@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package com.kodebeagle.spark.util
+package com.kodebeagle.util
 
 import com.kodebeagle.configuration.KodeBeagleConfig
 import com.kodebeagle.indexer.{RepoFileNameInfo, Repository, SourceFile, Statistics}
-import com.kodebeagle.parser.RepoFileNameParser
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}

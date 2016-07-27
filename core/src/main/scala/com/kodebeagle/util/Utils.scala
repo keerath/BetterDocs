@@ -15,23 +15,30 @@
  * limitations under the License.
  */
 
-package com.kodebeagle.crawler
+package com.kodebeagle.util
 
-import java.io._
-import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
+import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter}
+import java.net.URI
+import java.util.zip.{ZipEntry, ZipInputStream}
 
-import com.kodebeagle.indexer.{Repository, RepoFileNameInfo, Statistics}
+import com.kodebeagle.indexer.{RepoFileNameInfo, Repository, Statistics}
 import com.kodebeagle.logging.Logger
-import org.apache.commons.compress.archivers.zip.{ZipArchiveEntry, ZipArchiveOutputStream}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 import scala.collection.mutable
-import scala.util.Try
 
-/**
-  * Extracts java files and packages from the given zip file.
-  */
+object Utils extends Logger {
 
-object ZipBasicParser extends Logger {
+  def write(outputPath: String, record: (Int, Int, String), conf: Configuration): Unit = {
+    val outFile = s"$outputPath/${record._1}-${record._2}"
+
+    val fs = FileSystem.get(URI.create(outFile), conf)
+
+    val writer = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(outFile), true)))
+    writer.write(record._3)
+    writer.close()
+  }
 
   private def toRepository(mayBeFileInfo: Option[RepoFileNameInfo], stats: Statistics) =
     mayBeFileInfo.map(fileInfo => Repository(fileInfo.login, fileInfo.id, fileInfo.name,
@@ -82,53 +89,6 @@ object ZipBasicParser extends Logger {
     val stats = Statistics(sloc, fileCount, size)
     (list.toList, toRepository(repoFileNameInfo, stats))
   }
-
-  def listAllFiles(dir: String): Array[File] = new File(dir).listFiles
 }
 
-object ZipUtil extends Logger {
 
-  def createZip(directoryPath: String, zipPath: String) {
-    try {
-      val fOut = new FileOutputStream(new File(zipPath))
-      val bOut = new BufferedOutputStream(fOut)
-      val tOut = new ZipArchiveOutputStream(bOut)
-      addFileToZip(tOut, directoryPath, "")
-      tOut.finish()
-      tOut.close()
-      bOut.close()
-      fOut.close()
-    } catch {
-      case ex: Exception => log.error(s"exception while zipping directory $directoryPath", ex)
-    }
-  }
-
-  def addFileToZip(zOut: ZipArchiveOutputStream, path: String, base: String) {
-    val f = new File(path)
-    val entryName = base + f.getName
-    val zipEntry = new ZipArchiveEntry(f, entryName)
-    import org.apache.commons.io.IOUtils
-    zOut.putArchiveEntry(zipEntry)
-    if (f.isFile) {
-      try {
-        for {
-          fInputStream <- Option(new FileInputStream(f))
-        } yield {
-          IOUtils.copy(fInputStream, zOut)
-          zOut.closeArchiveEntry()
-          IOUtils.closeQuietly(fInputStream)
-        }
-      } catch {
-        case ex: Exception => log.error(s"exception while zipping file ${f.getAbsolutePath}", ex)
-      }
-    } else {
-      zOut.closeArchiveEntry()
-      val children = f.listFiles()
-      if (Option(children).isDefined) {
-        for (child <- children) {
-          addFileToZip(zOut, child.getAbsolutePath, entryName + "/")
-        }
-      }
-    }
-  }
-}

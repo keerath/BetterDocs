@@ -19,7 +19,6 @@ package com.kodebeagle.parser
 
 import org.scalastyle.CheckerUtils
 
-import scala.collection.immutable.IndexedSeq
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
 import scalariform.parser.{FullDefOrDcl, FunDefOrDcl, TemplateBody, TmplDef}

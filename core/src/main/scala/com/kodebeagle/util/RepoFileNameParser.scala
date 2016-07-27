@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-package com.kodebeagle.parser
+package com.kodebeagle.util
 
 import com.kodebeagle.indexer.RepoFileNameInfo
 import com.kodebeagle.logging.Logger
 
 import scala.util.Try
-import scala.util.parsing.combinator._
+import scala.util.parsing.combinator.RegexParsers
 
+/**
+  * Created by keerathj on 25/7/16.
+  */
 object RepoFileNameParser extends RegexParsers with Logger {
 
   def apply(input: String): Option[RepoFileNameInfo] = Try(parseAll(repo, input)).toOption.flatMap {

@@ -19,8 +19,8 @@ package com.kodebeagle.parser
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
-import scalariform.lexer.{Tokens, Token}
-import scalariform.parser.{Param, ParamClause, AstNode, CallExpr, FunDefOrDcl}
+import scalariform.lexer.{Token, Tokens}
+import scalariform.parser.{AstNode, CallExpr, FunDefOrDcl, Param, ParamClause}
 import scalariform.utils.Range
 
 class ScalaParserBase(funDefOrDcl: FunDefOrDcl) {

@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.kodebeagle.spark.job
+package com.kodebeagle.spark
 
 import java.util.zip.ZipInputStream
 
 import com.kodebeagle.configuration.KodeBeagleConfig
-import com.kodebeagle.crawler.ZipBasicParser
 import com.kodebeagle.indexer.Repository
-import com.kodebeagle.parser.{JsParser, RepoFileNameParser}
-import com.kodebeagle.spark.util.SparkIndexJobHelper
-import SparkIndexJobHelper._
+import com.kodebeagle.parser.JsParser
+import com.kodebeagle.util.SparkIndexJobHelper._
+import com.kodebeagle.util.{RepoFileNameParser, Utils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -38,7 +37,7 @@ object IndexJobForJS {
     val zipFileExtractedRDD = zipFileNameRDD.map { case (zipFileName, stream) =>
       val repofileNameInfo = RepoFileNameParser(zipFileName)
       val (filesMap, repo) =
-        ZipBasicParser.readJSFiles(repofileNameInfo, new ZipInputStream(stream.open()))
+        Utils.readJSFiles(repofileNameInfo, new ZipInputStream(stream.open()))
       (filesMap, repo)
     }
     zipFileExtractedRDD
