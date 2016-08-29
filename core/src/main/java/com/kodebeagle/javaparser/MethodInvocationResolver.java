@@ -18,12 +18,14 @@
 package com.kodebeagle.javaparser;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.Javadoc;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
@@ -40,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-
 public class MethodInvocationResolver extends TypeResolver {
 
     private static final String OBJECT_TYPE = "java.lang.Object";
@@ -53,7 +54,6 @@ public class MethodInvocationResolver extends TypeResolver {
     protected Stack<String> typesInFile = new Stack<>();
     protected Map<String, String> typeTosuperType = new HashMap<>();
     private Map<String, List<Object>> typeToInterfacesFullyQualifiedName = new HashMap<>();
-    protected Map<String, List<String>> typeToInterfaces = new HashMap<>();
     public Map<String, TypeJavadoc> typeJavadocs = new HashMap<>();
 
     public Map<String, String> getSuperType() {
@@ -131,9 +131,16 @@ public class MethodInvocationResolver extends TypeResolver {
     @Override
     public boolean visit(MethodDeclaration node) {
         methodStack.push(node);
-        addMethodDecl(node);
+        MethodDecl methoDecl = getMethodDecl(node);
+        declaredMethods.add(methoDecl);
+        Javadoc javadoc = node.getJavadoc();
+        ASTNode parent = node.getParent();
+        if (javadoc != null && parent instanceof AbstractTypeDeclaration) {
+            String typeName = ((AbstractTypeDeclaration) parent).getName().getFullyQualifiedName();
+            String fqt = currentPackage + "." + removeSpecialSymbols(typeName);
+            addMethodDoc(fqt, methoDecl, javadoc.toString());
 
-        addMethodDoc(node);
+        }
         return super.visit(node);
     }
 
@@ -241,16 +248,13 @@ public class MethodInvocationResolver extends TypeResolver {
         typeJavadocs.put(fullTypeName, new TypeJavadoc(fullTypeName, docComment, new HashSet<MethodJavadoc>()));
     }
 
-    private void addMethodDoc(MethodDeclaration node) {
-        if (node.getJavadoc() != null && node.getParent() instanceof AbstractTypeDeclaration) {
-            String typeName = ((AbstractTypeDeclaration) node.getParent()).getName().getFullyQualifiedName();
-            String fullTypeName = currentPackage + "." + removeSpecialSymbols(typeName);
-            TypeJavadoc typeJavadoc = typeJavadocs.get(fullTypeName);
-            if (typeJavadoc != null) {
-                typeJavadoc.getMethodJavadocs().add(
-                        new MethodJavadoc(node.getName().getFullyQualifiedName(),
-                                node.getJavadoc().toString()));
-            }
+    private void addMethodDoc(String fqt, MethodDecl methodDecl, String methodDoc) {
+        TypeJavadoc typeJavadoc = typeJavadocs.get(fqt);
+        if (typeJavadoc != null) {
+            List<String> args = Lists.newArrayList(methodDecl.getArgs().values());
+            typeJavadoc.getMethodJavadocs().add(
+                    new MethodJavadoc(methodDecl.getMethodName(),
+                            args, methodDoc));
         }
     }
 
@@ -271,12 +275,6 @@ public class MethodInvocationResolver extends TypeResolver {
             }
         }
         return null;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void addMethodDecl(MethodDeclaration node) {
-        MethodDecl methoDecl = getMethodDecl(node);
-        declaredMethods.add(methoDecl);
     }
 
     private MethodDecl getMethodDecl(MethodDeclaration node) {
@@ -643,9 +641,15 @@ public class MethodInvocationResolver extends TypeResolver {
     }
 
     public static class MethodJavadoc extends JavaDoc {
+        private List<String> argTypes;
 
-        public MethodJavadoc(String name, String comment) {
+        public MethodJavadoc(String name, List<String> pArgTypes, String comment) {
             super(name, comment);
+            this.argTypes = pArgTypes;
+        }
+
+        public List<String> getArgTypes() {
+            return argTypes;
         }
     }
 

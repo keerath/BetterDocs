@@ -322,14 +322,20 @@ curl -XPUT localhost:9200/java/documentation/_mapping -d '{
                       "index": "no"
                     },
                     "propertyDocs": {
-                       "properties": {
-                         "propertyName": {
-                           "type": "string",
-                           "analyzer": "keyword_analyzer"
-                         },
-                         "propertyDoc": {
-                           "type": "string",
-                           "index": "no"
+                        "type": "nested",
+                        "include_in_parent": true,
+                        "properties": {
+                          "propertyName": {
+                            "type": "string",
+                            "analyzer": "keyword_analyzer"
+                          },
+                          "propertyDoc": {
+                            "type": "string",
+                            "index": "no"
+                          },
+                          "argTypes": {
+                            "type": "string",
+                            "index": "not_analyzed"
                          }
                        }
 

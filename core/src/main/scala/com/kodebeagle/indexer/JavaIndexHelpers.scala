@@ -267,7 +267,7 @@ object ExternalRefsIndexHelper extends Logger {
   }
 }
 
-object JavaDocIndexHelper extends Logger {
+object JavaDocIndexHelper {
 
   def generateJavaDocs(repoId: Long, repoFileLocation: String,
                        resolver: SingleClassBindingResolver): Set[TypeDocsIndices] = {
@@ -279,18 +279,16 @@ object JavaDocIndexHelper extends Logger {
       val methodJavaDocs = mutable.Set.empty[PropertyDocs]
 
       for (methodJavadoc: MethodJavadoc <- javadoc.getMethodJavadocs) {
-
-        methodJavaDocs.add(new PropertyDocs(methodJavadoc.getName,methodJavadoc.getComment))
-
+        methodJavaDocs.add(PropertyDocs(methodJavadoc.getName,
+          methodJavadoc.getArgTypes.toList, methodJavadoc.getComment))
       }
 
-      commentIndices.add(new TypeDocsIndices(javadoc.getName,
+      commentIndices.add(TypeDocsIndices(javadoc.getName,
         javadoc.getComment, methodJavaDocs.toSet))
 
     }
 
     commentIndices.toSet
   }
-
 }
 

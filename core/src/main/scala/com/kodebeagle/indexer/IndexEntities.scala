@@ -59,6 +59,7 @@ case class TypeDeclaration(fileType: String, loc: Line)
 
 // for each import -- its fqt, its var locations, its methods and their locations
 case class ExternalRef(fqt: String, vars: Set[Line], methods: Set[MethodTypeLocation])
+
 case class MethodTypeLocation(loc: Set[Line], method: String, argTypes: List[String])
 
 // method definitions in this file
@@ -88,7 +89,8 @@ case class TypesInFile(repoName: String, fileName: String,
                        // declared types -> methods
                        declaredTypes: Map[String, Set[MethodType]])
 
-case class PropertyDocs(propertyName: String, propertyDoc: String) extends Property
+case class PropertyDocs(propertyName: String, argTypes: List[String],
+                        propertyDoc: String) extends Property
 
 case class TypeDocsIndices(typeName: String, typeDoc: String,
                            propertyDocs: Set[PropertyDocs]) extends Property
