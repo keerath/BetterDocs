@@ -115,16 +115,19 @@ curl -X PUT localhost:9200/java/typereference/_mapping -d '{
 						"properties": {
 							"name": {
 								"type": "string",
+								"norms": { "enabled": false },
 								"analyzer": "keyword_analyzer"
 							},
 							"props": {
 								"type": "string",
+								"norms": { "enabled": false },
 								"analyzer": "keyword_analyzer"
 							}
 						}
 					},
 					"text": {
 						"type": "string",
+						"norms": { "enabled": false },
 						"analyzer": "simple"
 					}
 				}
