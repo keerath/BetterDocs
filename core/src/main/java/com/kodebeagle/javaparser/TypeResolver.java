@@ -202,6 +202,7 @@ public class TypeResolver extends ASTVisitor {
 				return Class.forName("java.lang." + className).getName();
 			} catch (final ClassNotFoundException e) {
 				// Non a java lang class, thus it's in current package
+
 			}
 		}
 
@@ -230,13 +231,12 @@ public class TypeResolver extends ASTVisitor {
                 // TODO: this is used for exceptions till now
                 // So we will just capture the first type that we encounter
 				final UnionType uType = (UnionType) type;
-				final StringBuffer sb = new StringBuffer();
+				final StringBuilder sb = new StringBuilder();
 				for (final Object unionedType : uType.types()) {
-					sb.append(getNameOfType(((Type) unionedType)));
+					sb.append(getNameOfType((Type) unionedType));
                     break;
-					// sb.append(" | ");
 				}
-				// sb.delete(sb.length() - 3, sb.length());
+
 				nameOfType = sb.toString();
 			} else if (type.isWildcardType()) {
 				final WildcardType wType = (WildcardType) type;
@@ -258,7 +258,7 @@ public class TypeResolver extends ASTVisitor {
 	 * @return
 	 */
 	private String getParametrizedType(final ParameterizedType type, final Boolean innerTypes) {
-		final StringBuffer sb = new StringBuffer(getFullyQualifiedNameFor(type
+		final StringBuilder sb = new StringBuilder(getFullyQualifiedNameFor(type
 				.getType().toString()));
 
 		if(innerTypes) {

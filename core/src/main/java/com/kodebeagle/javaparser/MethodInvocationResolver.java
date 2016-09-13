@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.Javadoc;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -47,14 +46,14 @@ public class MethodInvocationResolver extends TypeResolver {
     private static final String OBJECT_TYPE = "java.lang.Object";
 
     private Map<MethodDecl, List<MethodInvokRef>> methodInvoks = new HashMap<>();
-    private Stack<MethodDeclaration> methodStack = new Stack<MethodDeclaration>();
-    private List<MethodDecl> declaredMethods = new ArrayList<MethodDecl>();
+    private Stack<MethodDeclaration> methodStack = new Stack<>();
+    private List<MethodDecl> declaredMethods = new ArrayList<>();
     private List<TypeDecl> typeDeclarations = new ArrayList<>();
     protected Map<String, String> types = new HashMap<>();
     protected Stack<String> typesInFile = new Stack<>();
     protected Map<String, String> typeTosuperType = new HashMap<>();
     private Map<String, List<Object>> typeToInterfacesFullyQualifiedName = new HashMap<>();
-    public Map<String, TypeJavadoc> typeJavadocs = new HashMap<>();
+    protected Map<String, TypeJavadoc> typeJavadocs = new HashMap<>();
 
     public Map<String, String> getSuperType() {
         return typeTosuperType;
@@ -76,9 +75,9 @@ public class MethodInvocationResolver extends TypeResolver {
 
         Set<TypeJavadoc> typeJavadocsSet = new HashSet<>();
 
-        for (String key : this.typeJavadocs.keySet()) {
+        for (Map.Entry<String,TypeJavadoc> entry : this.typeJavadocs.entrySet()) {
 
-            typeJavadocsSet.add(this.typeJavadocs.get(key));
+            typeJavadocsSet.add(entry.getValue());
 
         }
 
@@ -289,13 +288,12 @@ public class MethodInvocationResolver extends TypeResolver {
 
         Map<String, String> params = new HashMap<>();
         for (Object p : node.parameters()) {
-            String typeName = OBJECT_TYPE;
             if (p instanceof SingleVariableDeclaration) {
 
                 SingleVariableDeclaration svd = (SingleVariableDeclaration) p;
                 String varName = svd.getName().toString();
                 Type type = svd.getType();
-                typeName = getNameOfType(type);
+                String typeName = getNameOfType(type);
 
                 params.put(varName, typeName);
             } else {
@@ -311,7 +309,7 @@ public class MethodInvocationResolver extends TypeResolver {
                                            Map<String, Integer> scopeBindings) {
         String targetType = "";
         if (target != null && !target.isEmpty()) {
-            if (target.equals("this")) {
+            if ("this".equals(target)) {
                 targetType = currentPackage + "." + Joiner.on(".").join(typesInFile);
             } else {
                 final Integer variableId = scopeBindings.get(target);
@@ -331,7 +329,7 @@ public class MethodInvocationResolver extends TypeResolver {
         String target = "";
         if (expression != null) {
             target = expression.toString().trim();
-            if (target.isEmpty() || target.equals("this")) {
+            if (target.isEmpty() || "this".equals(target)) {
                 return "this";
             }
             if (!target.isEmpty() && !isValidIdentifier(target)) {
@@ -361,7 +359,7 @@ public class MethodInvocationResolver extends TypeResolver {
     @SuppressWarnings("rawtypes")
     protected List<String> translateArgsToTypes(List args,
                                                 Map<String, Integer> scopeBindings) {
-        List<String> argTypes = new ArrayList<String>();
+        List<String> argTypes = new ArrayList<>();
         for (Object o : args) {
             String name = o.toString();
             Integer varId = scopeBindings.get(name);
@@ -381,12 +379,12 @@ public class MethodInvocationResolver extends TypeResolver {
 
     public Map<String, List<String>> getInterfaces() {
         Map<String, List<String>> typeToInterfaces = new HashMap<>();
-        for (String type : typeToInterfacesFullyQualifiedName.keySet()) {
+        for (Map.Entry<String,List<Object>> entry : typeToInterfacesFullyQualifiedName.entrySet()) {
             List<String> interfaces = new ArrayList<>();
-            for (Object intrface : typeToInterfacesFullyQualifiedName.get(type)) {
+            for (Object intrface : entry.getValue()) {
                 interfaces.add(removeSpecialSymbols(getFullyQualifiedNameFor(intrface.toString())));
             }
-            typeToInterfaces.put(type, interfaces);
+            typeToInterfaces.put(entry.getKey(), interfaces);
         }
         return typeToInterfaces;
     }
@@ -450,15 +448,22 @@ public class MethodInvocationResolver extends TypeResolver {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
 
             MethodDecl that = (MethodDecl) o;
 
-            if (location != that.location) return false;
-            if (!methodName.equals(that.methodName)) return false;
-            if (!enclosingType.equals(that.enclosingType)) return false;
-            if (!returnType.equals(that.returnType)) return false;
+            if (location != that.location)
+                return false;
+            if (!methodName.equals(that.methodName))
+                return false;
+            if (!enclosingType.equals(that.enclosingType))
+                return false;
+            if (!returnType.equals(that.returnType))
+                return false;
+
             return args.equals(that.args);
 
         }
@@ -617,8 +622,10 @@ public class MethodInvocationResolver extends TypeResolver {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
 
             JavaDoc javaDoc = (JavaDoc) o;
 
@@ -651,6 +658,17 @@ public class MethodInvocationResolver extends TypeResolver {
         public List<String> getArgTypes() {
             return argTypes;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
     }
 
     public static class TypeJavadoc extends JavaDoc {
@@ -671,6 +689,16 @@ public class MethodInvocationResolver extends TypeResolver {
             return "TypeJavadoc{" +
                     "methodJavadocs=" + methodJavadocs +
                     "}, typeDoc=" + super.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
         }
     }
 

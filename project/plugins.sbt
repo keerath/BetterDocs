@@ -12,7 +12,21 @@ addSbtPlugin("de.johoop" % "cpd4sbt" % "1.1.5")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
+
+addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.2.0")
+
 resolvers += "corux-releases" at "http://tomcat.corux.de/nexus/content/repositories/releases/"
 
 resolvers += "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/"
+
+resolvers += Resolver.url("scoverage-bintray",
+  url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
+
+libraryDependencies ++= Seq(
+
+  "net.sourceforge.pmd" % "pmd" % "5.1.3" exclude("org.ow2.asm", "asm")
+)
+
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 

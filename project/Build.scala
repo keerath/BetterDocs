@@ -20,6 +20,7 @@ import com.typesafe.sbt.{GitBranchPrompt, GitVersioning}
 import de.johoop.cpd4sbt.CopyPasteDetector._
 import de.johoop.cpd4sbt.Language
 import de.johoop.findbugs4sbt.FindBugs._
+import de.johoop.jacoco4sbt.JacocoPlugin.jacoco
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyKeys._
@@ -113,7 +114,7 @@ object KodeBeagleBuild extends Build {
     autoScalaLibrary := true,
     scalaVersion := "2.10.4")
 
-  def coreSettings = kodebeagleSettings ++ Seq(libraryDependencies ++= Dependencies.kodebeagle)
+  def coreSettings = kodebeagleSettings ++ Seq(libraryDependencies ++= Dependencies.kodebeagle)++ Seq(jacoco.settings:_*)
 
   def fatJarSettings = kodebeagleSettings ++ Seq(libraryDependencies ++= Dependencies.kodebeagleProvided) ++ Seq(assemblyMergeStrategy in assembly := {
     case "plugin.properties" | "plugin.xml" | ".api_description" | "META-INF/eclipse.inf" | ".options" => MergeStrategy.first
@@ -138,7 +139,8 @@ object KodeBeagleBuild extends Build {
       fork := true,
       javacOptions ++= Seq("-source", "1.7"),
       javaOptions += "-Xmx6048m",
-      javaOptions += "-XX:+HeapDumpOnOutOfMemoryError"
+      javaOptions += "-XX:+HeapDumpOnOutOfMemoryError",
+      parallelExecution in jacoco.Config := false
     )
 }
 

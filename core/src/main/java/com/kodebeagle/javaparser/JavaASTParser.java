@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -94,7 +95,7 @@ public class JavaASTParser implements Serializable {
         }
         parser.setKind(astKind);
 
-        final Map<String, String> options = new Hashtable<String, String>();
+        final Map<String, String> options = new HashMap<>();
         options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM,
                 JavaCore.VERSION_1_8);
         options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
@@ -131,16 +132,24 @@ public class JavaASTParser implements Serializable {
     private final MethodDeclaration getFirstMethodDeclaration(final ASTNode node) {
         final TopMethodRetriever visitor = new TopMethodRetriever();
         node.accept(visitor);
-        return visitor.topDcl;
+        return visitor.getTopDcl();
     }
 
     private static final class TopMethodRetriever extends ASTVisitor {
-        public MethodDeclaration topDcl;
+        private MethodDeclaration topDcl;
 
         @Override
         public boolean visit(final MethodDeclaration node) {
             topDcl = node;
             return false;
+        }
+
+        public MethodDeclaration getTopDcl() {
+            return topDcl;
+        }
+
+        public void setTopDcl(MethodDeclaration topDcl) {
+            this.topDcl = topDcl;
         }
     }
 

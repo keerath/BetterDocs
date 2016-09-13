@@ -20,6 +20,7 @@
 if [ "$PR_VALIDATE" == "1" ]; then
     bin/pr_validate.pl
 else
-    sbt cpd scalastyle test:scalastyle test findbugs pmd checkstyle | grep -v -e "info.*Resolving" -e "downloading"
+    sbt cpd scalastyle test:scalastyle coverage jacoco:cover test findbugs pmd checkstyle | grep -v -e "info.*Resolving" -e "downloading"
+    sbt coverageReport
     bin/code_quality.pl
 fi
