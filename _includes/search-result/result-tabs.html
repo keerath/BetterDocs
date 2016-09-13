@@ -1,9 +1,17 @@
 <div class="result-statistics">
-    
     <div class="result-search-for">
         Results for: <strong>
-        <span ng-bind="model.searchedData"></span></strong>
+          <span ng-bind="model.searchedData"></span></strong>
+        <br>
+        <br>
+        <span>
+          <strong>Frequently used with:</strong>
+          {% raw %}
+          <a href="" ng-repeat-start = "relatedType in model.relatedTypes" 
+          ng-click = "relatedTypeOnClick(relatedType)" value = "{{relatedType}}">
+          {{relatedType}}{% endraw %}</a>
+          <span ng-repeat-end="">
+          </span>
     </div>
-   
     {% include search-result/files-content.html %}
 </div>

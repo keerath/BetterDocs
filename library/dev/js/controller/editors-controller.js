@@ -27,11 +27,16 @@
         }
       };
 
+      $scope.relatedTypeOnClick = function(relatedType) {
+          var reqObj = { term: relatedType, type: "type" };
+          selectedTexts.push(reqObj);
+      }
+
       $scope.goToTop = function(snipp, line) {
         var val = line.lineNumber - snipp.start;
         var scrollEle = $(snipp.ele).closest( '.snippet-wraper' );
         var offset = $(snipp.ele)[0].offsetTop + snipp.ele.find( 'ol li:nth-child(' +val + ')'  )[0].offsetTop;
-        scrollEle.scrollTop( offset );
+        scrollEle.scrollTop(offset);
       }
 
       $scope.toggleCode =  function( snipp ) {
@@ -62,7 +67,6 @@
         $timeout( function() {
         }, 100);
       };
-
 
 
       $scope.toggleCodeSnippets = function( e ) {

@@ -339,6 +339,7 @@
         model.showPageResponse = true;
         model.totalFiles = result.data.total_hits;
         model.totalHitCount = result.data.total_hits;
+        model.relatedTypes = result.data.related_types;
         var linesObj, imports = {};
 
         result.data.hits.forEach(function(eachFile){
