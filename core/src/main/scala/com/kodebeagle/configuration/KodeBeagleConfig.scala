@@ -65,17 +65,6 @@ object KodeBeagleConfig extends ConfigReader {
 
   private[kodebeagle] val repoIndicesBackupPath: String =
     get("kodebeagle.hdfs.indices.backup.path").get
-
-  def nextToken(arr: Array[String] = githubTokens): String = {
-    if (lastIndex == arr.length - 1) {
-      lastIndex = 0
-      arr(lastIndex)
-    } else {
-      lastIndex = lastIndex + 1
-      arr(lastIndex)
-    }
-  }
-
 }
 
 object TopicModelConfig extends ConfigReader {

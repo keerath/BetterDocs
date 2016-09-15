@@ -19,9 +19,9 @@ package com.kodebeagle.indexer
 
 case class Line(line: Int, startCol: Int, endCol: Int)
 
-case class ContextProperty(name: String) extends Property
+case class ContextProperty(name: String, args: List[String]) extends Property
 
-case class PayloadProperty(name: String, lines: Set[Line]) extends Property
+case class PayloadProperty(name: String, args: List[String], lines: Set[Line]) extends Property
 
 case class ContextType(name: String, props: Set[ContextProperty]) extends Type {
   type T = ContextProperty

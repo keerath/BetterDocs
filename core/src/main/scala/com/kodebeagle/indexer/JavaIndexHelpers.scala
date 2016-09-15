@@ -49,7 +49,7 @@ object FileMetaDataIndexHelper extends Logger {
     val superTypes = SuperTypes(resolver.getSuperType.toMap,
       resolver.getInterfaces.toMap.mapValues(_.toList))
     FileMetaData(repoId, fileName, superTypes, fileTypes.toList,
-      extRefList, methodDefinitionList.toList, internalRefsList.toList)
+      extRefList, methodDefinitionList.toList, internalRefsList)
   }
 
   private def getMethodDefinitionList(unit: CompilationUnit,
@@ -139,7 +139,7 @@ object FileMetaDataIndexHelper extends Logger {
       val (typ, mth) = value
       val methLocSet = agg.getOrElse(typ, mutable.Set.empty[MethodTypeLocation])
       val mtch = methLocSet.find(e =>
-        (e.method.equals(mth.method) && e.argTypes.size.equals(mth.argTypes.size)))
+        e.method.equals(mth.method) && e.argTypes.size.equals(mth.argTypes.size))
 
       def betterType(t1: List[String], t2: List[String]) = {
         t1.zip(t2).map(e => {
@@ -149,14 +149,12 @@ object FileMetaDataIndexHelper extends Logger {
       }
 
       mtch match {
-        case Some(m) => {
+        case Some(m) =>
           methLocSet.remove(m)
           methLocSet.add(MethodTypeLocation(m.loc ++ mth.loc, m.method,
             betterType(m.argTypes, mth.argTypes)))
-        }
-        case None => {
+        case None =>
           methLocSet.add(mth)
-        }
       }
       agg.update(typ, methLocSet)
       agg
@@ -183,18 +181,16 @@ object TypesInFileIndexHelper extends Logger {
         valOpt match {
           // If value for a type already exists in the map, then get the existing value,
           // modify it and update the same map.
-          case Some(v) => {
+          case Some(v) =>
             val updatedVal = (v._1 + mthd.getTarget,
               v._2 + MethodType(mthd.getReturnType, mthd.getMethodName,
                 mthd.getArgTypes.toList, false, mthd.getConstructor))
             agg.update(mthd.getTargetType, updatedVal)
-          }
           // If value doesn't already exist, create and add to the map.
-          case None => {
+          case None =>
             agg.put(mthd.getTargetType, (Set(mthd.getTarget),
               Set(MethodType(mthd.getReturnType, mthd.getMethodName,
                 mthd.getArgTypes.toList, false, mthd.getConstructor))))
-          }
         }
         agg
       }
@@ -206,17 +202,18 @@ object TypesInFileIndexHelper extends Logger {
       (agg, mthd) => {
         val valOpt = agg.get(mthd.getEnclosingType)
         valOpt match {
-          case Some(v) => {
+          case Some(v) =>
             agg.update(mthd.getEnclosingType,
               v + MethodType(mthd.getReturnType, mthd.getMethodName,
-                mthd.getArgs.values().toList, true, Option(mthd.getReturnType).isDefined))
-          }
-          case None => {
+                mthd.getArgs.values().toList, isDeclared = true,
+                isConstructor = Option(mthd.getReturnType).isDefined))
+
+          case None =>
             agg.put(mthd.getEnclosingType,
               Set(MethodType(mthd.getReturnType, mthd.getMethodName,
                 // we will loose the param order here.
-                mthd.getArgs.values().toList, true, Option(mthd.getReturnType).isDefined)))
-          }
+                mthd.getArgs.values().toList, isDeclared = true,
+                isConstructor = Option(mthd.getReturnType).isDefined)))
         }
         agg
       }
@@ -241,7 +238,9 @@ object ExternalRefsIndexHelper extends Logger {
       val contextTypes = methodCalls.groupBy(_.getTargetType)
         // then map the grp to:
         .map { case (typ, grp) =>
-        val props = grp.groupBy(_.getMethodName).keys.map(ContextProperty).toSet
+        val props = grp.groupBy(method => (method.getMethodName, method.getArgTypes)).keys
+          .map { case (methodName, args) => ContextProperty(methodName, args.toList) }.toSet
+
         ContextType(typ, props)
       }.toSet
       Context(Utils.generateMethodSignature(methodDecl), contextTypes)
@@ -254,13 +253,17 @@ object ExternalRefsIndexHelper extends Logger {
     import scala.collection.JavaConversions._
     val payloadTypes = scbr.getMethodInvoks.values().flatten
       .groupBy(_.getTargetType).map { case (typ, grp) =>
-      val propSet = grp.groupBy(_.getMethodName).map { case (prop, pgrp) =>
-        PayloadProperty(prop, pgrp.map(t => {
+
+      val propSet = grp.groupBy(method => (method.getMethodName, method.getArgTypes))
+        .map { case ((propName, args), pgrp) =>
+
+        PayloadProperty(propName, args.toList, pgrp.map(t => {
           val line = cu.getLineNumber(t.getLocation)
           val col = cu.getColumnNumber(t.getLocation)
           Line(line, col, col + t.getLength)
         }).toSet)
       }.toSet
+
       PayloadType(typ, propSet)
     }.toSet
     Payload(payloadTypes, score, repoFileLocation)

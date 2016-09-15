@@ -18,12 +18,14 @@
 package com.kodebeagle.util
 
 import com.kodebeagle.configuration.KodeBeagleConfig
-import com.kodebeagle.indexer.{ContextProperty, Line, RepoFileNameInfo, Repository, SourceFile, Statistics}
+import com.kodebeagle.indexer.{ContextProperty, Line, PayloadProperty, PropertyDocs, RepoFileNameInfo, Repository, SourceFile, Statistics}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
-import org.json4s.CustomSerializer
-import org.json4s.JsonAST.{JArray, JInt, JString}
+import org.json4s.JsonAST.{JArray, JField, JInt, JObject, JString, JValue}
+import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization.write
+import org.json4s.{CustomSerializer, NoTypeHints, _}
 
 import scala.io.Source
 import scala.util.Try
@@ -127,22 +129,21 @@ object SparkIndexJobHelper {
   def toIndexTypeJson[T <: AnyRef <% Product with Serializable](indexName: String,
                                                                 typeName: String, t: Set[T]
                                                                ): String = {
-    (for (item <- t) yield toIndexTypeJson(indexName, typeName,item)).mkString("\n")
+    (for (item <- t) yield toIndexTypeJson(indexName, typeName, item)).mkString("\n")
   }
 
   case class IndexHeader(index: IndexValue)
+
   case class IndexValue(_index: String, _type: String, _id: String)
 
   def toIndexTypeJson[T <: AnyRef <% Product with Serializable](indexName: String,
                                                                 typeName: String, t: T,
                                                                 idopt: Option[String] = None
                                                                ): String = {
-    import org.json4s._
-    import org.json4s.jackson.Serialization
-    import org.json4s.jackson.Serialization.write
 
-    implicit val formats = Serialization.formats(NoTypeHints) +
-      new LineSerializer + new ContextPropertySerializer
+    implicit val formats = Serialization.formats(NoTypeHints) + new ContextPropertySerializer +
+      new PayloadPropertySerializer + new PropertyDocsSerializer
+
     val header = idopt match {
       case None => s"""{ "index" : {"_index" : "$indexName", "_type" : "$typeName" }"""
       case Some(id) => write(IndexHeader(IndexValue(indexName, typeName, id)))
@@ -151,26 +152,64 @@ object SparkIndexJobHelper {
   }
 
   def toJson[T <: AnyRef <% Product with Serializable](t: T): String = {
-    import org.json4s._
-    import org.json4s.jackson.Serialization
-    import org.json4s.jackson.Serialization.write
-    implicit val formats = Serialization.formats(NoTypeHints) +
-      new LineSerializer + new ContextPropertySerializer
+
+    implicit val formats = Serialization.formats(NoTypeHints) + new ContextPropertySerializer +
+      new PayloadPropertySerializer + new PropertyDocsSerializer
+
     val indexName = t.productPrefix.toLowerCase
     "" + write(t)
   }
 
-  class LineSerializer extends CustomSerializer[Line](format => ({
-    case JArray(List(JInt(line), JInt(startCol), JInt(endCol))) =>
-      Line(line.toInt, startCol.toInt, endCol.toInt)
+  class PayloadPropertySerializer extends CustomSerializer[PayloadProperty](format => ({
+
+    case JObject(List(JField("name", JString(propNameWithArgs)),
+    JField("lines", JArray(lines)))) =>
+      val propNameAndArgs = getPropNameAndArgs(propNameWithArgs)
+      PayloadProperty(propNameAndArgs._1, propNameAndArgs._2, deSerLines(lines))
   }, {
-    case line: Line => JArray(List(JInt(line.line), JInt(line.startCol), JInt(line.endCol)))
+    case PayloadProperty(name, args, lines) =>
+      val nameWithArgs = toNameWithArgs(name, args)
+      JObject(List(JField("name", JString(nameWithArgs)), JField("lines", serLines(lines))))
   }))
+
+  private def serLines(lines: Set[Line]) = JArray(lines.map(line => JArray(List(JInt(line.line),
+    JInt(line.startCol), JInt(line.endCol)))).toList)
+
+  private def deSerLines(lines: List[JValue]) =
+    lines.map { jValue =>
+      val linesArr = jValue.asInstanceOf[JArray].arr.toArray
+      val lineNum = linesArr(0).asInstanceOf[JInt].num.toInt
+      val startCol = linesArr(1).asInstanceOf[JInt].num.toInt
+      val endCol = linesArr(2).asInstanceOf[JInt].num.toInt
+      Line(lineNum, startCol, endCol)
+    }.toSet
 
   class ContextPropertySerializer extends CustomSerializer[ContextProperty](format => ({
-    case JString(prop: String) => ContextProperty(prop)
+    case JString(prop: String) => val (name, args) = getPropNameAndArgs(prop)
+      ContextProperty(name, args)
   }, {
-    case ctxProp: ContextProperty => JString(ctxProp.name)
+    case ctxProp: ContextProperty => JString(toNameWithArgs(ctxProp.name, ctxProp.args))
   }))
 
+
+  class PropertyDocsSerializer extends CustomSerializer[PropertyDocs](format => ({
+    case JObject(List(JField("propertyName", JString(nameAndArgs)),
+    JField("propertyDoc", JString(propDoc)))) =>
+      val (name, args) = getPropNameAndArgs(nameAndArgs)
+      PropertyDocs(name, args, propDoc)
+  }, {
+    case propDocs: PropertyDocs => JObject(List(JField("propertyName",
+      JString(toNameWithArgs(propDocs.propertyName, propDocs.argTypes))),
+      JField("propertyDoc", JString(propDocs.propertyDoc))))
+  }))
+
+  private def toNameWithArgs(name: String, args: List[String]): String =
+    s"$name(${args.mkString(",")})"
+
+  private def getPropNameAndArgs(prop: String) = {
+    val indexOfParen = prop.indexOf('(')
+    val propName = prop.substring(0, indexOfParen)
+    val propArgs = prop.substring(indexOfParen + 1).stripSuffix(")").split(",").toList
+    (propName, propArgs)
+  }
 }
