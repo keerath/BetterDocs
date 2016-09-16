@@ -62,6 +62,7 @@ object KodeBeagleConfig extends ConfigReader {
   private[kodebeagle] val repoIndicesHdfsPath: String = get("kodebeagle.hdfs.indices.path").get
   private[kodebeagle] val repoMetaDataHdfsPath: String = get("kodebeagle.hdfs.repo.meta.path").get
   private[kodebeagle] val typesInfoLocation: String = get("kodebeagle.hdfs.repo.typesinfo.path").get
+  private[kodebeagle] val javaDocLocation: String = get("kodebeagle.hdfs.repo.javadoc.path").get
 
   private[kodebeagle] val repoIndicesBackupPath: String =
     get("kodebeagle.hdfs.indices.backup.path").get
