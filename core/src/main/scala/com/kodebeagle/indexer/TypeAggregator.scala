@@ -123,7 +123,6 @@ class TypeAggregator() extends Serializable {
               methods remove m
               methods add om
             }
-
           }
           // There's no matching method encountered yet, add it
           case None => methods add om
@@ -151,20 +150,25 @@ class TypeAggregator() extends Serializable {
     score > 0
   }
 
-  def randomString(): String = {
+  def randomString: String = {
     val r = scala.util.Random
     r.nextInt(10000).toString
   }
 
-  def result(typeName: String): TypeAggregation = {
+  def result(typeName: String, propDocs: Set[PropertyDocs]): TypeAggregation = {
     val tokens = typeName.split("\\.")
 
     val srchText = methods.map(m => {
-      val typeprefix = s"${camelCasePattern.split(typeName).mkString(" ")}"
-      val methodprefix = s"${camelCasePattern.split(m.methodName).mkString(" ")}"
+      val typePrefix = s"${camelCasePattern.split(typeName).mkString(" ")}"
+      val methodPrefix = s"${camelCasePattern.split(m.methodName).mkString(" ")}"
+
       val methodText = m.argTypes
         .map(e => camelCasePattern.split(e.split("\\.").last).mkString(" ")).mkString(" ")
-      s"$typeprefix $methodprefix $methodText"
+      // considering overloaded methods check name and arg types
+      val methodDoc = propDocs.find(propDoc => propDoc.propertyName == m.methodName &&
+        propDoc.argTypes == m.argTypes).getOrElse("")
+
+      s"$methodDoc $typePrefix $methodPrefix $methodText"
     }).toSet
 
     TypeAggregation(typeName, score,

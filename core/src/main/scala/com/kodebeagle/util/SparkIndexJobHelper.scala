@@ -43,6 +43,8 @@ object SparkIndexJobHelper {
 
   def createSparkContext(conf: SparkConf): SparkContext = {
     val sc = new SparkContext(conf)
+    conf.setMaster(KodeBeagleConfig.sparkMaster)
+    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     sc.hadoopConfiguration.set("mapreduce.input.fileinputformat.input.dir.recursive", "true")
     sc
   }
