@@ -95,4 +95,4 @@ case class PropertyDocs(propertyName: String, argTypes: List[String],
 case class TypeDocsIndices(typeName: String, typeDoc: String,
                            propertyDocs: Set[PropertyDocs]) extends Property
 
-case class Docs(fileName: String, typeDocs: Set[TypeDocsIndices])
+case class Docs(fileName: String, typeDocs: Set[TypeDocsIndices], score: Long)

@@ -43,7 +43,7 @@ class JavaRepo(val baseRepo: GithubRepo) extends Repo with Logger
   }
 }
 
-class JavaFileInfo(baseFile: GithubFileInfo, repo: JavaRepo) extends FileInfo
+class JavaFileInfo(val baseFile: GithubFileInfo, repo: JavaRepo) extends FileInfo
   with LazyLoadSupport with Logger {
 
   assert(baseFile.fileName.endsWith(".java"),

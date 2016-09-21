@@ -19,11 +19,14 @@ package com.kodebeagle.util
 
 import com.kodebeagle.configuration.KodeBeagleConfig
 import com.kodebeagle.indexer.{ContextProperty, Line, RepoFileNameInfo, Repository, SourceFile, Statistics}
+import com.kodebeagle.logging.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
-import org.json4s.CustomSerializer
+import org.json4s.{CustomSerializer, NoTypeHints}
 import org.json4s.JsonAST.{JArray, JInt, JString}
+import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization._
 
 import scala.io.Source
 import scala.util.Try
@@ -175,4 +178,31 @@ object SparkIndexJobHelper {
     case ctxProp: ContextProperty => JString(ctxProp.name)
   }))
 
+  // read index from a path of a given type `T` and remove lines which are Es headers
+  def parseIndex[T](indexRDD: RDD[String],
+                    headerToFilter: Option[String])(implicit manifest: Manifest[T]): RDD[T] = {
+
+    def isEsHeader(line: String, header: String) = line.startsWith(header)
+
+    val filteredRDD = headerToFilter match {
+      case Some(header) => indexRDD.filter(!isEsHeader(_, header))
+      case None => indexRDD
+    }
+    filteredRDD.flatMap(parse[T](_))
+  }
+
+  // parse a line from json as type `T`
+  private def parse[T](line: String)(implicit manifest: Manifest[T]) = {
+    implicit val formats = Serialization.formats(NoTypeHints)
+    line.trim.isEmpty match {
+      case true => None
+      case false => Try {
+        try {
+          read[T](line)
+        } catch {
+          case e: Throwable => throw e
+        }
+      }.toOption
+    }
+  }
 }

@@ -18,14 +18,10 @@
 package com.kodebeagle.spark
 
 import com.kodebeagle.configuration.KodeBeagleConfig
-import com.kodebeagle.indexer.{Docs, PropertyDocs, TypeAggregator, TypeDocsIndices, TypesInFile}
+import com.kodebeagle.indexer.{Docs, TypeAggregator, TypesInFile}
 import com.kodebeagle.logging.Logger
 import com.kodebeagle.util.SparkIndexJobHelper._
 import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
-import org.json4s.NoTypeHints
-import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization._
 
 import scala.util.Try
 
@@ -63,11 +59,8 @@ object TypeAggregationJob extends Logger {
       (agg, value) => agg.merge(value._1, value._2, value._3, value._4),
       (agg1, agg2) => agg1.merge(agg2))
 
-    // filter lines that start with this header
-    val JAVA_DOC_HEADER =
-    """{"index":{"_index":"java","_type":"documentation","_id":"""
-    // read typeDocs with the header above to filter
-    val javaDocIndex = parseIndex[Docs](sc.textFile(javaDocLocation), Some(JAVA_DOC_HEADER))
+    // read typeDocs
+    val javaDocIndex = parseIndex[Docs](sc.textFile(javaDocLocation), None)
     // groupBy type
     val typeVsDocs = javaDocIndex.flatMap(docs => docs.typeDocs.groupBy(_.typeName))
     // and get only propDocs for searchText
@@ -78,34 +71,5 @@ object TypeAggregationJob extends Logger {
     typeAggWithDocs.map { case (typeName, (agg, propDocs)) =>
       toIndexTypeJson("java", "aggregation", agg.result(typeName, propDocs))
     }.saveAsTextFile(s"${KodeBeagleConfig.repoIndicesHdfsPath}Java/types_aggregate")
-  }
-
-  // read index from a path of a given type `T` and remove lines which are Es headers
-  private def parseIndex[T](indexRDD: RDD[String],
-                            headerToFilter: Option[String])(implicit manifest: Manifest[T]) = {
-
-    def isEsHeader(line: String, header: String) = line.startsWith(header)
-
-    val filteredRDD = headerToFilter match {
-      case Some(header) => indexRDD.filter(!isEsHeader(_, header))
-      case None => indexRDD
-    }
-    filteredRDD.flatMap(parse[T](_))
-  }
-
-  // parse a line from json as type `T`
-  private def parse[T](line: String)(implicit manifest: Manifest[T]) = {
-    implicit val formats = Serialization.formats(NoTypeHints)
-    line.trim.isEmpty match {
-      case true => None
-      case false => Try {
-        try {
-          read[T](line)
-        } catch {
-          case e: Throwable => log.error(s"Could not read line $line")
-            throw e
-        }
-      }.toOption
-    }
   }
 }

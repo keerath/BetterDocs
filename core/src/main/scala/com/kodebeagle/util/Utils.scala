@@ -24,11 +24,17 @@ import java.util.zip.{ZipEntry, ZipInputStream}
 import com.kodebeagle.indexer.{RepoFileNameInfo, Repository, Statistics}
 import com.kodebeagle.javaparser.MethodInvocationResolver.MethodDecl
 import com.kodebeagle.logging.Logger
+import com.kodebeagle.spark.TypeAggregationJob._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import scala.collection.JavaConversions._
+import org.apache.spark.rdd.RDD
+import org.json4s.NoTypeHints
+import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization._
 
+import scala.collection.JavaConversions._
 import scala.collection.mutable
+import scala.util.Try
 
 object Utils extends Logger {
 

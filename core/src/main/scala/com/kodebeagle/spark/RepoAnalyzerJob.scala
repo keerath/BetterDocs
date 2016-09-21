@@ -173,8 +173,11 @@ object RepoAnalyzerJob extends Logger {
         writeIndex("java", "sourcefile", SourceFile(file.repoId, file.repoFileLocation,
           file.fileContent), fileLoc, srcWriter)
         writeIndex("java", "filedetails", file.fileDetails, fileLoc, fileDetailsWriter)
-        writeIndex("java", "documentation",
-          Docs(file.repoFileLocation, file.javaDocs), fileLoc, commentsWriter)
+
+        val docsEntry = toJson(Docs(file.repoFileLocation, file.javaDocs,
+          file.baseFile.githubRepoInfo.stargazersCount))
+        commentsWriter.write(docsEntry + "\n")
+
         val typesInfoEntry = toJson(file.typesInFile)
         typesInfoWriter.write(typesInfoEntry + "\n")
         // file.free()
